@@ -121,7 +121,7 @@ function filterTipo(t, btn) {
   document.querySelectorAll("#tipoSection .pill").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
   renderList();
-  document.getElementById("detail").innerHTML = emptyState();
+  document.getElementById("detail").innerHTML = emptyState(); document.querySelector(".main").classList.remove("has-selection");
 }
 
 function filterSpecial(f, btn) {
@@ -210,8 +210,9 @@ function renderList() {
       if (activeItemEl) activeItemEl.classList.remove("active");
       el.classList.add("active");
       activeItemEl = el;
+      document.querySelector(".main").classList.add("has-selection");
       document.getElementById("detail").scrollTop = 0;
-      el.scrollIntoView({ behavior:"smooth", block:"start" });
+      el.scrollIntoView({ behavior:"smooth", block:"nearest" });
       renderDetail(d);
     });
     list.appendChild(el);

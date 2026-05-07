@@ -47,7 +47,7 @@ body {
 .logo-area { flex-shrink: 0; }
 .app-title {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 17px; font-weight: 900; color: var(--parch);
+  font-size: 24px; font-weight: 900; color: var(--parch);
   line-height: 1.15; text-shadow: 1px 2px 4px rgba(0,0,0,0.5);
 }
 .app-sub {
@@ -122,21 +122,21 @@ body {
 .route-item:hover { background: rgba(90,42,14,0.1); }
 .route-item.active { background: var(--leather); }
 
-.ri-type { font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--leather-md); margin-bottom: 1px; }
+.ri-type { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--leather-md); margin-bottom: 2px; }
 .route-item.active .ri-type { color: var(--bronze-lt); }
 
 .ri-name-row { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
-.ri-name { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+.ri-name { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1.3; }
 .route-item.active .ri-name { color: var(--parch-light); }
 
 /* Icons in list — bigger when active */
 .ri-icons { display: flex; gap: 2px; flex-shrink: 0; }
-.ri-icon { font-size: 12px; line-height: 1; transition: font-size 0.15s; }
-.route-item.active .ri-icon { font-size: 22px; }
+.ri-icon { font-size: 36px; line-height: 1; transition: font-size 0.15s; }
+.route-item.active .ri-icon { font-size: 42px; }
 .fav-icon  { color: #C01020; }
 .done-icon { color: #1A6A1A; font-weight: 700; }
 
-.ri-prov { font-family: 'Inter', sans-serif; font-size: 11px; color: var(--ink-md); margin-top: 1px; }
+.ri-prov { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--ink-md); margin-top: 2px; }
 .route-item.active .ri-prov { color: rgba(242,232,204,0.7); }
 
 .ri-badges { display: flex; gap: 3px; margin-top: 4px; flex-wrap: wrap; }
@@ -293,7 +293,7 @@ body {
   .header-inner { flex-wrap: wrap; gap: 8px; }
   .logo-area { flex: 1; }
   .compass-svg { width: 40px; height: 40px; }
-  .app-title { font-size: 14px; }
+  .app-title { font-size: 19px; }
   .search-wrap { max-width: 100%; width: 100%; margin-left: 0; order: 3; flex-basis: 100%; }
 
   /* Mobile: lista arriba, detalle abajo */
@@ -316,7 +316,7 @@ body {
     max-height: 40dvh;
     transition: max-height 0.3s ease;
   }
-  /* Cuando no hay ítem seleccionado, el detail colapsa */
+  /* Sin selección: detail colapsa, lista ocupa todo */
   .detail:has(.empty-state) {
     max-height: 52px;
     overflow: hidden;
@@ -330,6 +330,14 @@ body {
   }
   .empty-txt { font-size: 13px; }
 
+  /* Con selección: lista se achica, detalle se expande */
+  .main.has-selection .sidebar {
+    max-height: 28dvh;
+  }
+  .main.has-selection .detail {
+    max-height: 72dvh;
+  }
+
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .hero-title { font-size: 20px; }
   .photos-pair { grid-template-columns: 1fr; }
@@ -338,7 +346,7 @@ body {
   .maps-modal-inner { height: 85vh; }
 }
 @media (max-width: 400px) {
-  .app-title { font-size: 13px; }
+  .app-title { font-size: 17px; }
   .hero-title { font-size: 18px; }
 }
 
