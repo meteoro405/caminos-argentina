@@ -214,6 +214,7 @@ function renderList() {
       document.getElementById("detail").scrollTop = 0;
       el.scrollIntoView({ behavior:"smooth", block:"nearest" });
       renderDetail(d);
+      history.pushState({ itemIndex: DATA.indexOf(d) }, "", "");
     });
     list.appendChild(el);
   });
@@ -362,3 +363,13 @@ document.querySelectorAll("#tipoSection .pill").forEach(b => {
   b.classList.toggle("active", b.textContent==="Todos");
 });
 renderList();
+
+/* ── BACK BUTTON ────────────────────────────────────────── */
+window.addEventListener("popstate", () => {
+  if (activeItemEl) {
+    activeItemEl.classList.remove("active");
+    activeItemEl = null;
+  }
+  document.querySelector(".main").classList.remove("has-selection");
+  document.getElementById("detail").innerHTML = emptyState();
+});
