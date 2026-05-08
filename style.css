@@ -368,8 +368,8 @@ body {
   border-radius: 8px;
 }
 .stat-ruta-icon {
-  height: 48px;
-  width: 48px;
+  height: 72px;
+  width: 72px;
   max-width: 90%;
   object-fit: contain;
 }

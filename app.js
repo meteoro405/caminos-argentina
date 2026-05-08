@@ -367,12 +367,21 @@ document.querySelectorAll("#tipoSection .pill").forEach(b => {
 });
 renderList();
 
+// Estado base en el historial: impide que el primer "atrás" salga de la app
+history.replaceState({ base: true }, "");
+
 /* ── BACK BUTTON ────────────────────────────────────────── */
-window.addEventListener("popstate", () => {
+window.addEventListener("popstate", (e) => {
   if (activeItemEl) {
+    // Hay ítem seleccionado: volver al listado
     activeItemEl.classList.remove("active");
     activeItemEl = null;
+    document.querySelector(".main").classList.remove("has-selection");
+    document.getElementById("detail").innerHTML = emptyState();
+    // Restaurar estado base para que el próximo atrás no salga
+    history.replaceState({ base: true }, "");
+  } else {
+    // Ya estamos en el listado: minimizar la app (comportamiento nativo)
+    history.back();
   }
-  document.querySelector(".main").classList.remove("has-selection");
-  document.getElementById("detail").innerHTML = emptyState();
 });
