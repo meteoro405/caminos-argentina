@@ -207,6 +207,7 @@ function renderList() {
       `<div class="ri-badges">${difBadge}${supBadge}</div>`;
 
     el.addEventListener("click", () => {
+      const yaHabiaSeleccion = !!activeItemEl;
       if (activeItemEl) activeItemEl.classList.remove("active");
       el.classList.add("active");
       activeItemEl = el;
@@ -214,7 +215,13 @@ function renderList() {
       document.getElementById("detail").scrollTop = 0;
       el.scrollIntoView({ behavior:"smooth", block:"nearest" });
       renderDetail(d);
-      history.pushState({ itemIndex: DATA.indexOf(d) }, "", "");
+      // Si ya había una ruta abierta, reemplazamos la entrada del historial
+      // para que "atrás" vuelva al listado con un solo toque, sin acumular entradas
+      if (yaHabiaSeleccion) {
+        history.replaceState({ itemIndex: DATA.indexOf(d) }, "");
+      } else {
+        history.pushState({ itemIndex: DATA.indexOf(d) }, "");
+      }
     });
     list.appendChild(el);
   });
@@ -373,15 +380,16 @@ history.replaceState({ base: true }, "");
 /* ── BACK BUTTON ────────────────────────────────────────── */
 window.addEventListener("popstate", (e) => {
   if (activeItemEl) {
-    // Hay ítem seleccionado: volver al listado
+    // Detener TTS si estaba leyendo
+    if (isSpeaking) { window.speechSynthesis.cancel(); isSpeaking = false; }
+    // Volver al listado
     activeItemEl.classList.remove("active");
     activeItemEl = null;
+    currentDetail = null;
     document.querySelector(".main").classList.remove("has-selection");
     document.getElementById("detail").innerHTML = emptyState();
-    // Restaurar estado base para que el próximo atrás no salga
+    // Dejar el estado base listo para el próximo "atrás"
     history.replaceState({ base: true }, "");
-  } else {
-    // Ya estamos en el listado: minimizar la app (comportamiento nativo)
-    history.back();
   }
+  // Si no hay ítem seleccionado, el navegador sale de la app de forma nativa
 });
