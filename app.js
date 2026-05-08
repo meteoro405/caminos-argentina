@@ -396,3 +396,237 @@ window.addEventListener("popstate", (e) => {
   }
   // Si no hay ítem seleccionado, el navegador sale de la app de forma nativa
 });
+
+/* ══════════════════════════════════════════════════════════
+   LIGHTBOX — visor de mapas con zoom y pan
+   ══════════════════════════════════════════════════════════ */
+(function() {
+  const lb      = document.getElementById('imgLightbox');
+  const lbImg   = document.getElementById('lb-img');
+  const lbCanvas= document.getElementById('lb-canvas');
+  const lbBadge = document.getElementById('lb-zoom-badge');
+  const lbClose = document.getElementById('lb-close-btn');
+
+  /* ── Estado ── */
+  let scale = 1, minScale = 1, maxScale = 5;
+  let tx = 0, ty = 0;          // translate actual
+  let imgW = 0, imgH = 0;      // tamaño natural de la imagen
+  let vpW = 0, vpH = 0;        // tamaño del viewport
+
+  /* ── Helpers ── */
+  function applyTransform(animate) {
+    if (animate) lbImg.style.transition = 'transform 0.2s ease';
+    else         lbImg.style.transition = 'none';
+    lbImg.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+  }
+
+  function clampTranslate() {
+    // límites de pan: no dejar salir la imagen del viewport
+    const scaledW = imgW * scale;
+    const scaledH = imgH * scale;
+    const maxTx = scaledW > vpW ? (scaledW - vpW) / 2 : 0;
+    const maxTy = scaledH > vpH ? (scaledH - vpH) / 2 : 0;
+    tx = Math.max(-maxTx, Math.min(maxTx, tx));
+    ty = Math.max(-maxTy, Math.min(maxTy, ty));
+  }
+
+  function showBadge() {
+    lbBadge.textContent = Math.round(scale * 100) + '%';
+    lbBadge.style.opacity = '1';
+    clearTimeout(lbBadge._t);
+    lbBadge._t = setTimeout(() => lbBadge.style.opacity = '0', 1200);
+  }
+
+  function resetTransform(animate) {
+    scale = minScale; tx = 0; ty = 0;
+    applyTransform(animate);
+  }
+
+  /* ── Abrir / Cerrar ── */
+  function openLightbox(src) {
+    lbImg.src = src;
+    lbImg.onload = () => {
+      vpW = lbCanvas.clientWidth;
+      vpH = lbCanvas.clientHeight;
+      imgW = lbImg.naturalWidth;
+      imgH = lbImg.naturalHeight;
+      // Escala inicial: encaja la imagen en el viewport
+      minScale = Math.min(vpW / imgW, vpH / imgH, 1);
+      scale = minScale; tx = 0; ty = 0;
+      // Centrar imagen
+      lbImg.style.width  = imgW + 'px';
+      lbImg.style.height = imgH + 'px';
+      lbImg.style.marginLeft = (-imgW / 2) + 'px';
+      lbImg.style.marginTop  = (-imgH / 2) + 'px';
+      lbImg.style.position   = 'absolute';
+      lbImg.style.left = '50%';
+      lbImg.style.top  = '50%';
+      applyTransform(false);
+    };
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lb.classList.remove('open');
+    lbImg.src = '';
+    document.body.style.overflow = '';
+  }
+
+  lbClose.addEventListener('click', closeLightbox);
+  lb.addEventListener('click', e => { if (e.target === lb || e.target === lbCanvas) closeLightbox(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && lb.classList.contains('open')) closeLightbox(); });
+
+  /* ══ MOUSE — desktop ══ */
+  let mouseDragging = false, mouseStartX, mouseStartY, mouseTx, mouseTy;
+
+  lbImg.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    mouseDragging = true;
+    mouseStartX = e.clientX; mouseStartY = e.clientY;
+    mouseTx = tx; mouseTy = ty;
+    lbImg.classList.add('dragging');
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (!mouseDragging) return;
+    tx = mouseTx + (e.clientX - mouseStartX);
+    ty = mouseTy + (e.clientY - mouseStartY);
+    clampTranslate();
+    applyTransform(false);
+  });
+
+  window.addEventListener('mouseup', () => {
+    mouseDragging = false;
+    lbImg.classList.remove('dragging');
+  });
+
+  // Scroll = zoom centrado en el cursor
+  lbCanvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = lbCanvas.getBoundingClientRect();
+    const cx = e.clientX - rect.left - rect.width  / 2;
+    const cy = e.clientY - rect.top  - rect.height / 2;
+    const factor = e.deltaY < 0 ? 1.12 : 0.89;
+    const newScale = Math.max(minScale, Math.min(maxScale, scale * factor));
+    const ratio = newScale / scale;
+    tx = cx - ratio * (cx - tx);
+    ty = cy - ratio * (cy - ty);
+    scale = newScale;
+    clampTranslate();
+    applyTransform(false);
+    showBadge();
+    if (scale <= minScale) resetTransform(true);
+  }, { passive: false });
+
+  /* ══ TOUCH — mobile ══ */
+  let touches = [];
+  let lastPinchDist = 0;
+  let panStartX, panStartY, panTx, panTy;
+  let lastTapTime = 0, lastTapX, lastTapY;
+
+  function getTouchDist(t) {
+    const dx = t[0].clientX - t[1].clientX;
+    const dy = t[0].clientY - t[1].clientY;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
+  function getTouchMid(t) {
+    return {
+      x: (t[0].clientX + t[1].clientX) / 2,
+      y: (t[0].clientY + t[1].clientY) / 2
+    };
+  }
+
+  lbCanvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    touches = Array.from(e.touches);
+
+    if (touches.length === 1) {
+      // Detectar doble tap
+      const now = Date.now();
+      const tx1 = touches[0].clientX, ty1 = touches[0].clientY;
+      if (now - lastTapTime < 300 && Math.abs(tx1 - lastTapX) < 40 && Math.abs(ty1 - lastTapY) < 40) {
+        // Doble tap: toggle zoom
+        const rect = lbCanvas.getBoundingClientRect();
+        const cx = tx1 - rect.left - rect.width  / 2;
+        const cy = ty1 - rect.top  - rect.height / 2;
+        if (scale > minScale * 1.1) {
+          resetTransform(true);
+        } else {
+          const targetScale = Math.min(maxScale, minScale * 2.5);
+          const ratio = targetScale / scale;
+          tx = cx - ratio * (cx - tx);
+          ty = cy - ratio * (cy - ty);
+          scale = targetScale;
+          clampTranslate();
+          applyTransform(true);
+        }
+        showBadge();
+        lastTapTime = 0;
+        return;
+      }
+      lastTapTime = now; lastTapX = tx1; lastTapY = ty1;
+      // Inicio de pan
+      panStartX = touches[0].clientX; panStartY = touches[0].clientY;
+      panTx = tx; panTy = ty;
+    }
+
+    if (touches.length === 2) {
+      lastPinchDist = getTouchDist(touches);
+      panTx = tx; panTy = ty;
+    }
+  }, { passive: false });
+
+  lbCanvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    touches = Array.from(e.touches);
+    const rect = lbCanvas.getBoundingClientRect();
+
+    if (touches.length === 1 && scale > minScale * 1.01) {
+      // Pan con un dedo (solo si hay zoom)
+      tx = panTx + (touches[0].clientX - panStartX);
+      ty = panTy + (touches[0].clientY - panStartY);
+      clampTranslate();
+      applyTransform(false);
+    }
+
+    if (touches.length === 2) {
+      // Pinch zoom
+      const dist = getTouchDist(touches);
+      const mid  = getTouchMid(touches);
+      const cx   = mid.x - rect.left - rect.width  / 2;
+      const cy   = mid.y - rect.top  - rect.height / 2;
+      const factor = dist / lastPinchDist;
+      const newScale = Math.max(minScale, Math.min(maxScale, scale * factor));
+      const ratio = newScale / scale;
+      tx = cx - ratio * (cx - tx);
+      ty = cy - ratio * (cy - ty);
+      scale = newScale;
+      lastPinchDist = dist;
+      clampTranslate();
+      applyTransform(false);
+      showBadge();
+    }
+  }, { passive: false });
+
+  lbCanvas.addEventListener('touchend', e => {
+    touches = Array.from(e.touches);
+    if (touches.length === 0 && scale < minScale * 1.05) {
+      resetTransform(true);
+    }
+    if (touches.length === 1) {
+      panStartX = touches[0].clientX; panStartY = touches[0].clientY;
+      panTx = tx; panTy = ty;
+    }
+  }, { passive: false });
+
+  /* ── Delegación: click en cualquier img dentro de .map-container ── */
+  document.getElementById('detail').addEventListener('click', e => {
+    const img = e.target.closest('.map-container img');
+    if (img && img.complete && img.naturalWidth > 0) {
+      openLightbox(img.src);
+    }
+  });
+
+})();

@@ -394,3 +394,84 @@ body {
   height: 240px;
   object-fit: contain;
 }
+
+/* ── LIGHTBOX VISOR DE MAPAS ─────────────────────────────── */
+#imgLightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(10,5,2,0.96);
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+#imgLightbox.open {
+  display: flex;
+}
+#imgLightbox .lb-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 9001;
+  background: rgba(255,255,255,0.12);
+  border: none;
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s;
+}
+#imgLightbox .lb-close:hover { background: rgba(255,255,255,0.25); }
+#imgLightbox .lb-hint {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.45);
+  font-size: 12px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+#lb-canvas {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#lb-img {
+  max-width: none;
+  max-height: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  transform-origin: 0 0;
+  cursor: grab;
+  transition: none;
+}
+#lb-img.dragging { cursor: grabbing; }
+/* Indicador de zoom */
+#lb-zoom-badge {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+/* Cursor en los mapas para indicar que son clicables */
+.map-container img { cursor: zoom-in; }
