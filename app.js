@@ -120,14 +120,22 @@ function filterTipo(t, btn) {
   searchClear.classList.remove("visible");
   document.querySelectorAll("#tipoSection .pill").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
+  // Restaurar sidebar en mobile si estaba oculta
+  document.querySelector(".sidebar").style.display = "";
+  document.querySelector(".main").classList.remove("has-selection");
+  document.getElementById("detail").innerHTML = emptyState();
   renderList();
-  document.getElementById("detail").innerHTML = emptyState(); document.querySelector(".main").classList.remove("has-selection");
 }
 
 function filterSpecial(f, btn) {
   activeFilter = f;
   document.querySelectorAll(".filter-special").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
+  // Restaurar sidebar en mobile si estaba oculta
+  document.querySelector(".sidebar").style.display = "";
+  document.querySelector(".main").classList.remove("has-selection");
+  activeItemEl = null;
+  document.getElementById("detail").innerHTML = emptyState();
   renderList();
 }
 
@@ -285,10 +293,10 @@ function renderDetail(d) {
       `<div class="stat"><span class="stat-val">${d.ruta||"—"}</span><span class="stat-key">Ruta</span></div>` +
     `</div>` +
 
-    // Observaciones — TTS button inline at right
-    (d.obs ? `<div class="obs-block obs-above-map"><div class="sec-title">Observaciones</div>` +
-      `<div class="obs-row">` +
-        `<span class="obs-tag ${obsClass}">${d.warn?"⚠ ":""}${d.obs}</span>` +
+    // Observaciones — TTS button junto al título
+    (d.obs ? `<div class="obs-block obs-above-map">` +
+      `<div class="obs-title-row">` +
+        `<div class="sec-title">Observaciones</div>` +
         `<button class="tts-btn" onclick="speakObs('${obsEscJs}',this)" title="Escuchar">` +
           `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">` +
             `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>` +
@@ -297,7 +305,9 @@ function renderDetail(d) {
           `</svg>` +
           `<span class="tts-label">Escuchar</span>` +
         `</button>` +
-      `</div></div>` : "") +
+      `</div>` +
+      `<span class="obs-tag ${obsClass}">${d.warn?"⚠ ":""}${d.obs}</span>` +
+      `</div>` : "") +
 
     // Mapa
     `<div class="map-section"><div class="sec-title">Mapa</div>` +
