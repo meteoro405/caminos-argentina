@@ -309,6 +309,7 @@ body {
     min-height: 0;
     max-height: 60dvh;
     overflow-y: auto;
+    transition: max-height 0.3s ease, border 0.3s ease;
   }
   .detail {
     order: 2;
@@ -330,12 +331,14 @@ body {
   }
   .empty-txt { font-size: 13px; }
 
-  /* Con selección: lista se achica, detalle se expande */
+  /* Con selección: sidebar desaparece, detail ocupa toda la pantalla */
   .main.has-selection .sidebar {
-    max-height: 28dvh;
+    max-height: 0;
+    overflow: hidden;
+    border-bottom: none;
   }
   .main.has-selection .detail {
-    max-height: 72dvh;
+    max-height: 100dvh;
   }
 
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
