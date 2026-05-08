@@ -331,11 +331,15 @@ body {
   }
   .empty-txt { font-size: 13px; }
 
-  /* Con selección: sidebar desaparece, detail ocupa toda la pantalla */
+  /* Con selección: sidebar desaparece totalmente, detail ocupa toda la pantalla */
   .main.has-selection .sidebar {
-    max-height: 0;
-    overflow: hidden;
-    border-bottom: none;
+    max-height: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    border-bottom: none !important;
+    padding: 0 !important;
+    visibility: hidden;
   }
   .main.has-selection .detail {
     max-height: 100dvh;

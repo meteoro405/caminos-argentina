@@ -212,11 +212,12 @@ function renderList() {
       el.classList.add("active");
       activeItemEl = el;
       document.querySelector(".main").classList.add("has-selection");
+      // En mobile ocultamos la sidebar completamente
+      if (window.innerWidth <= 680) {
+        document.querySelector(".sidebar").style.display = "none";
+      }
       document.getElementById("detail").scrollTop = 0;
-      el.scrollIntoView({ behavior:"smooth", block:"nearest" });
       renderDetail(d);
-      // Si ya había una ruta abierta, reemplazamos la entrada del historial
-      // para que "atrás" vuelva al listado con un solo toque, sin acumular entradas
       if (yaHabiaSeleccion) {
         history.replaceState({ itemIndex: DATA.indexOf(d) }, "");
       } else {
@@ -382,6 +383,8 @@ window.addEventListener("popstate", (e) => {
   if (activeItemEl) {
     // Detener TTS si estaba leyendo
     if (isSpeaking) { window.speechSynthesis.cancel(); isSpeaking = false; }
+    // Restaurar sidebar en mobile
+    document.querySelector(".sidebar").style.display = "";
     // Volver al listado
     activeItemEl.classList.remove("active");
     activeItemEl = null;
