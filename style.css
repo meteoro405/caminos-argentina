@@ -395,83 +395,67 @@ body {
   object-fit: contain;
 }
 
-/* ── LIGHTBOX VISOR DE MAPAS ─────────────────────────────── */
-#imgLightbox {
+/* ── LIGHTBOX ─────────────────────────────────────────────── */
+#lb-overlay {
   display: none;
   position: fixed;
   inset: 0;
   z-index: 9000;
-  background: rgba(10,5,2,0.96);
-  align-items: center;
-  justify-content: center;
+  background: rgba(8,4,2,0.97);
   touch-action: none;
-}
-#imgLightbox.open {
-  display: flex;
-}
-#imgLightbox .lb-close {
-  position: absolute;
-  top: 14px;
-  right: 16px;
-  z-index: 9001;
-  background: rgba(255,255,255,0.12);
-  border: none;
-  color: #fff;
-  font-size: 26px;
-  line-height: 1;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(4px);
-  transition: background 0.2s;
-}
-#imgLightbox .lb-close:hover { background: rgba(255,255,255,0.25); }
-#imgLightbox .lb-hint {
-  position: absolute;
-  bottom: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(255,255,255,0.45);
-  font-size: 12px;
-  pointer-events: none;
-  white-space: nowrap;
-}
-#lb-canvas {
-  position: absolute;
-  inset: 0;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
+#lb-overlay.open { display: block; }
+
 #lb-img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
   max-width: none;
   max-height: none;
   user-select: none;
   -webkit-user-drag: none;
-  transform-origin: 0 0;
   cursor: grab;
-  transition: none;
+  will-change: transform;
 }
-#lb-img.dragging { cursor: grabbing; }
-/* Indicador de zoom */
-#lb-zoom-badge {
+#lb-img.grabbing { cursor: grabbing; }
+
+#lb-close {
   position: absolute;
-  top: 14px;
-  left: 16px;
-  background: rgba(255,255,255,0.12);
+  top: 14px; right: 16px;
+  z-index: 9010;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.15);
   color: #fff;
-  font-size: 13px;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(6px);
+}
+#lb-badge {
+  position: absolute;
+  top: 16px; left: 16px;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  font-size: 12px;
   padding: 4px 10px;
   border-radius: 20px;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s;
 }
-/* Cursor en los mapas para indicar que son clicables */
+#lb-hint {
+  position: absolute;
+  bottom: 20px; left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.4);
+  font-size: 12px;
+  pointer-events: none;
+  white-space: nowrap;
+}
 .map-container img { cursor: zoom-in; }

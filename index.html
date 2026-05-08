@@ -114,14 +114,12 @@
     </div>
   </div>
 
-  <!-- Lightbox visor de mapas -->
-  <div id="imgLightbox" role="dialog" aria-modal="true">
-    <button class="lb-close" id="lb-close-btn" aria-label="Cerrar">✕</button>
-    <div id="lb-canvas">
-      <img id="lb-img" src="" alt="Mapa ampliado" draggable="false"/>
-    </div>
-    <div id="lb-zoom-badge">100%</div>
-    <div class="lb-hint">Pellizco para zoom · Arrastrá para mover · Doble tap para zoom</div>
+  <!-- Lightbox -->
+  <div id="lb-overlay">
+    <img id="lb-img" src="" alt="" draggable="false"/>
+    <button id="lb-close" aria-label="Cerrar">✕</button>
+    <div id="lb-badge"></div>
+    <div id="lb-hint">Pellizco para zoom · Arrastrá para mover · Doble tap para zoom</div>
   </div>
 
   <script src="data.js"></script>

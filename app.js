@@ -398,234 +398,252 @@ window.addEventListener("popstate", (e) => {
 });
 
 /* ══════════════════════════════════════════════════════════
-   LIGHTBOX — visor de mapas con zoom y pan
+   LIGHTBOX v2 — zoom + pan correcto
    ══════════════════════════════════════════════════════════ */
-(function() {
-  const lb      = document.getElementById('imgLightbox');
-  const lbImg   = document.getElementById('lb-img');
-  const lbCanvas= document.getElementById('lb-canvas');
-  const lbBadge = document.getElementById('lb-zoom-badge');
-  const lbClose = document.getElementById('lb-close-btn');
+(function () {
+  const overlay = document.getElementById('lb-overlay');
+  const img     = document.getElementById('lb-img');
+  const btnClose= document.getElementById('lb-close');
+  const badge   = document.getElementById('lb-badge');
 
-  /* ── Estado ── */
-  let scale = 1, minScale = 1, maxScale = 5;
-  let tx = 0, ty = 0;          // translate actual
-  let imgW = 0, imgH = 0;      // tamaño natural de la imagen
-  let vpW = 0, vpH = 0;        // tamaño del viewport
+  /* La imagen siempre está centrada con:
+     transform: translate(-50%,-50%) translate(panX px, panY px) scale(zoom)
+     panX/panY son desplazamientos en px desde el centro. */
 
-  /* ── Helpers ── */
-  function applyTransform(animate) {
-    if (animate) lbImg.style.transition = 'transform 0.2s ease';
-    else         lbImg.style.transition = 'none';
-    lbImg.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+  let zoom = 1, minZoom = 1, maxZoom = 6;
+  let panX = 0, panY = 0;
+  let vpW = 0, vpH = 0;
+  let natW = 0, natH = 0;  // tamaño natural de la imagen
+  let dispW = 0, dispH = 0; // tamaño desplegado (fit-to-screen)
+
+  function applyTransform(animated) {
+    img.style.transition = animated ? 'transform 0.22s ease' : 'none';
+    img.style.transform = `translate(-50%,-50%) translate(${panX}px,${panY}px) scale(${zoom})`;
   }
 
-  function clampTranslate() {
-    // límites de pan: no dejar salir la imagen del viewport
-    const scaledW = imgW * scale;
-    const scaledH = imgH * scale;
-    const maxTx = scaledW > vpW ? (scaledW - vpW) / 2 : 0;
-    const maxTy = scaledH > vpH ? (scaledH - vpH) / 2 : 0;
-    tx = Math.max(-maxTx, Math.min(maxTx, tx));
-    ty = Math.max(-maxTy, Math.min(maxTy, ty));
+  function clampPan() {
+    // Cuánto puede moverse la imagen antes de salir del viewport
+    const scaledW = dispW * zoom;
+    const scaledH = dispH * zoom;
+    const limitX = Math.max(0, (scaledW - vpW) / 2);
+    const limitY = Math.max(0, (scaledH - vpH) / 2);
+    panX = Math.max(-limitX, Math.min(limitX, panX));
+    panY = Math.max(-limitY, Math.min(limitY, panY));
   }
 
   function showBadge() {
-    lbBadge.textContent = Math.round(scale * 100) + '%';
-    lbBadge.style.opacity = '1';
-    clearTimeout(lbBadge._t);
-    lbBadge._t = setTimeout(() => lbBadge.style.opacity = '0', 1200);
+    badge.textContent = Math.round(zoom * 100) + '%';
+    badge.style.opacity = '1';
+    clearTimeout(badge._t);
+    badge._t = setTimeout(() => { badge.style.opacity = '0'; }, 1400);
   }
 
-  function resetTransform(animate) {
-    scale = minScale; tx = 0; ty = 0;
-    applyTransform(animate);
+  function resetView(animated) {
+    zoom = minZoom; panX = 0; panY = 0;
+    applyTransform(animated);
   }
 
-  /* ── Abrir / Cerrar ── */
-  function openLightbox(src) {
-    lbImg.src = src;
-    lbImg.onload = () => {
-      vpW = lbCanvas.clientWidth;
-      vpH = lbCanvas.clientHeight;
-      imgW = lbImg.naturalWidth;
-      imgH = lbImg.naturalHeight;
-      // Escala inicial: encaja la imagen en el viewport
-      minScale = Math.min(vpW / imgW, vpH / imgH, 1);
-      scale = minScale; tx = 0; ty = 0;
-      // Centrar imagen
-      lbImg.style.width  = imgW + 'px';
-      lbImg.style.height = imgH + 'px';
-      lbImg.style.marginLeft = (-imgW / 2) + 'px';
-      lbImg.style.marginTop  = (-imgH / 2) + 'px';
-      lbImg.style.position   = 'absolute';
-      lbImg.style.left = '50%';
-      lbImg.style.top  = '50%';
+  /* zoom hacia/desde un punto (cx,cy) = coordenadas relativas al CENTRO del viewport */
+  function zoomAt(cx, cy, factor) {
+    const newZoom = Math.max(minZoom, Math.min(maxZoom, zoom * factor));
+    if (newZoom === zoom) return;
+    const ratio = newZoom / zoom;
+    panX = cx + ratio * (panX - cx);
+    panY = cy + ratio * (panY - cy);
+    zoom = newZoom;
+    clampPan();
+    applyTransform(false);
+    showBadge();
+    if (zoom <= minZoom * 1.01) resetView(true);
+  }
+
+  /* ── Abrir ── */
+  function open(src) {
+    img.style.transition = 'none';
+    img.style.transform  = 'translate(-50%,-50%) scale(1)';
+    img.src = '';
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    const tmp = new Image();
+    tmp.onload = () => {
+      vpW  = overlay.clientWidth;
+      vpH  = overlay.clientHeight;
+      natW = tmp.naturalWidth;
+      natH = tmp.naturalHeight;
+
+      // Calcular tamaño desplegado (fit dentro del viewport)
+      const scaleToFit = Math.min(vpW / natW, vpH / natH, 1);
+      dispW = natW * scaleToFit;
+      dispH = natH * scaleToFit;
+
+      // Asignar tamaño explícito a la imagen
+      img.style.width  = natW + 'px';
+      img.style.height = natH + 'px';
+
+      minZoom = scaleToFit;
+      zoom    = scaleToFit;
+      panX    = 0; panY = 0;
+
+      img.src = src;
       applyTransform(false);
     };
-    lb.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    tmp.src = src;
   }
 
-  function closeLightbox() {
-    lb.classList.remove('open');
-    lbImg.src = '';
+  function close() {
+    overlay.classList.remove('open');
+    img.src = '';
     document.body.style.overflow = '';
   }
 
-  lbClose.addEventListener('click', closeLightbox);
-  lb.addEventListener('click', e => { if (e.target === lb || e.target === lbCanvas) closeLightbox(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && lb.classList.contains('open')) closeLightbox(); });
+  btnClose.addEventListener('click', close);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+  });
 
-  /* ══ MOUSE — desktop ══ */
-  let mouseDragging = false, mouseStartX, mouseStartY, mouseTx, mouseTy;
+  /* ══ MOUSE ══ */
+  let mDrag = false, mSX, mSY, mPX, mPY;
 
-  lbImg.addEventListener('mousedown', e => {
+  img.addEventListener('mousedown', e => {
     if (e.button !== 0) return;
-    mouseDragging = true;
-    mouseStartX = e.clientX; mouseStartY = e.clientY;
-    mouseTx = tx; mouseTy = ty;
-    lbImg.classList.add('dragging');
+    mDrag = true; mSX = e.clientX; mSY = e.clientY; mPX = panX; mPY = panY;
+    img.classList.add('grabbing');
     e.preventDefault();
   });
-
   window.addEventListener('mousemove', e => {
-    if (!mouseDragging) return;
-    tx = mouseTx + (e.clientX - mouseStartX);
-    ty = mouseTy + (e.clientY - mouseStartY);
-    clampTranslate();
+    if (!mDrag) return;
+    panX = mPX + e.clientX - mSX;
+    panY = mPY + e.clientY - mSY;
+    clampPan();
     applyTransform(false);
   });
+  window.addEventListener('mouseup', () => { mDrag = false; img.classList.remove('grabbing'); });
 
-  window.addEventListener('mouseup', () => {
-    mouseDragging = false;
-    lbImg.classList.remove('dragging');
-  });
-
-  // Scroll = zoom centrado en el cursor
-  lbCanvas.addEventListener('wheel', e => {
+  overlay.addEventListener('wheel', e => {
     e.preventDefault();
-    const rect = lbCanvas.getBoundingClientRect();
-    const cx = e.clientX - rect.left - rect.width  / 2;
-    const cy = e.clientY - rect.top  - rect.height / 2;
-    const factor = e.deltaY < 0 ? 1.12 : 0.89;
-    const newScale = Math.max(minScale, Math.min(maxScale, scale * factor));
-    const ratio = newScale / scale;
-    tx = cx - ratio * (cx - tx);
-    ty = cy - ratio * (cy - ty);
-    scale = newScale;
-    clampTranslate();
-    applyTransform(false);
-    showBadge();
-    if (scale <= minScale) resetTransform(true);
+    const rect = overlay.getBoundingClientRect();
+    const cx = e.clientX - rect.left - vpW / 2;
+    const cy = e.clientY - rect.top  - vpH / 2;
+    zoomAt(cx, cy, e.deltaY < 0 ? 1.12 : 0.89);
   }, { passive: false });
 
-  /* ══ TOUCH — mobile ══ */
-  let touches = [];
-  let lastPinchDist = 0;
-  let panStartX, panStartY, panTx, panTy;
-  let lastTapTime = 0, lastTapX, lastTapY;
+  /* ══ TOUCH ══ */
+  let t1 = null, t2 = null;
+  let tPX, tPY, tStartX, tStartY;
+  let pinchDist0, pinchZoom0, pinchPX0, pinchPY0, pinchMidX0, pinchMidY0;
+  let lastTap = 0, lastTapX = 0, lastTapY = 0;
 
-  function getTouchDist(t) {
-    const dx = t[0].clientX - t[1].clientX;
-    const dy = t[0].clientY - t[1].clientY;
-    return Math.sqrt(dx*dx + dy*dy);
+  function ptDist(a, b) {
+    return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
   }
-  function getTouchMid(t) {
+  function ptMid(a, b, rect) {
     return {
-      x: (t[0].clientX + t[1].clientX) / 2,
-      y: (t[0].clientY + t[1].clientY) / 2
+      x: (a.clientX + b.clientX) / 2 - rect.left - vpW / 2,
+      y: (a.clientY + b.clientY) / 2 - rect.top  - vpH / 2
     };
   }
 
-  lbCanvas.addEventListener('touchstart', e => {
+  overlay.addEventListener('touchstart', e => {
     e.preventDefault();
-    touches = Array.from(e.touches);
+    const touches = e.touches;
 
     if (touches.length === 1) {
-      // Detectar doble tap
+      t1 = touches[0]; t2 = null;
+      tStartX = t1.clientX; tStartY = t1.clientY;
+      tPX = panX; tPY = panY;
+
+      // Doble tap
       const now = Date.now();
-      const tx1 = touches[0].clientX, ty1 = touches[0].clientY;
-      if (now - lastTapTime < 300 && Math.abs(tx1 - lastTapX) < 40 && Math.abs(ty1 - lastTapY) < 40) {
-        // Doble tap: toggle zoom
-        const rect = lbCanvas.getBoundingClientRect();
-        const cx = tx1 - rect.left - rect.width  / 2;
-        const cy = ty1 - rect.top  - rect.height / 2;
-        if (scale > minScale * 1.1) {
-          resetTransform(true);
+      const dx = t1.clientX - lastTapX, dy = t1.clientY - lastTapY;
+      if (now - lastTap < 280 && Math.hypot(dx, dy) < 50) {
+        lastTap = 0;
+        const rect = overlay.getBoundingClientRect();
+        const cx = t1.clientX - rect.left - vpW / 2;
+        const cy = t1.clientY - rect.top  - vpH / 2;
+        if (zoom > minZoom * 1.15) {
+          resetView(true); showBadge();
         } else {
-          const targetScale = Math.min(maxScale, minScale * 2.5);
-          const ratio = targetScale / scale;
-          tx = cx - ratio * (cx - tx);
-          ty = cy - ratio * (cy - ty);
-          scale = targetScale;
-          clampTranslate();
+          const target = Math.min(maxZoom, minZoom * 3);
+          const ratio  = target / zoom;
+          panX = cx + ratio * (panX - cx);
+          panY = cy + ratio * (panY - cy);
+          zoom = target;
+          clampPan();
           applyTransform(true);
+          showBadge();
         }
-        showBadge();
-        lastTapTime = 0;
-        return;
+      } else {
+        lastTap = now; lastTapX = t1.clientX; lastTapY = t1.clientY;
       }
-      lastTapTime = now; lastTapX = tx1; lastTapY = ty1;
-      // Inicio de pan
-      panStartX = touches[0].clientX; panStartY = touches[0].clientY;
-      panTx = tx; panTy = ty;
     }
 
     if (touches.length === 2) {
-      lastPinchDist = getTouchDist(touches);
-      panTx = tx; panTy = ty;
+      t1 = touches[0]; t2 = touches[1];
+      const rect = overlay.getBoundingClientRect();
+      pinchDist0  = ptDist(t1, t2);
+      pinchZoom0  = zoom;
+      pinchPX0    = panX;
+      pinchPY0    = panY;
+      const mid   = ptMid(t1, t2, rect);
+      pinchMidX0  = mid.x;
+      pinchMidY0  = mid.y;
     }
   }, { passive: false });
 
-  lbCanvas.addEventListener('touchmove', e => {
+  overlay.addEventListener('touchmove', e => {
     e.preventDefault();
-    touches = Array.from(e.touches);
-    const rect = lbCanvas.getBoundingClientRect();
+    const touches = e.touches;
 
-    if (touches.length === 1 && scale > minScale * 1.01) {
-      // Pan con un dedo (solo si hay zoom)
-      tx = panTx + (touches[0].clientX - panStartX);
-      ty = panTy + (touches[0].clientY - panStartY);
-      clampTranslate();
-      applyTransform(false);
+    if (touches.length === 1 && !t2) {
+      // Pan — sólo cuando hay zoom activo
+      if (zoom > minZoom * 1.02) {
+        panX = tPX + touches[0].clientX - tStartX;
+        panY = tPY + touches[0].clientY - tStartY;
+        clampPan();
+        applyTransform(false);
+      }
     }
 
     if (touches.length === 2) {
-      // Pinch zoom
-      const dist = getTouchDist(touches);
-      const mid  = getTouchMid(touches);
-      const cx   = mid.x - rect.left - rect.width  / 2;
-      const cy   = mid.y - rect.top  - rect.height / 2;
-      const factor = dist / lastPinchDist;
-      const newScale = Math.max(minScale, Math.min(maxScale, scale * factor));
-      const ratio = newScale / scale;
-      tx = cx - ratio * (cx - tx);
-      ty = cy - ratio * (cy - ty);
-      scale = newScale;
-      lastPinchDist = dist;
-      clampTranslate();
+      t1 = touches[0]; t2 = touches[1];
+      const rect  = overlay.getBoundingClientRect();
+      const dist  = ptDist(t1, t2);
+      const mid   = ptMid(t1, t2, rect);
+      const factor= dist / pinchDist0;
+      const newZoom = Math.max(minZoom, Math.min(maxZoom, pinchZoom0 * factor));
+      const ratio   = newZoom / pinchZoom0;
+      panX = pinchMidX0 + ratio * (pinchPX0 - pinchMidX0);
+      panY = pinchMidY0 + ratio * (pinchPY0 - pinchMidY0);
+      // Seguir el desplazamiento del punto medio
+      panX += mid.x - pinchMidX0;
+      panY += mid.y - pinchMidY0;
+      zoom = newZoom;
+      clampPan();
       applyTransform(false);
       showBadge();
     }
   }, { passive: false });
 
-  lbCanvas.addEventListener('touchend', e => {
-    touches = Array.from(e.touches);
-    if (touches.length === 0 && scale < minScale * 1.05) {
-      resetTransform(true);
-    }
+  overlay.addEventListener('touchend', e => {
+    const touches = e.touches;
+    if (touches.length < 2) { t2 = null; }
     if (touches.length === 1) {
-      panStartX = touches[0].clientX; panStartY = touches[0].clientY;
-      panTx = tx; panTy = ty;
+      t1 = touches[0];
+      tStartX = t1.clientX; tStartY = t1.clientY; tPX = panX; tPY = panY;
+    }
+    if (touches.length === 0) {
+      t1 = null;
+      if (zoom < minZoom * 1.05) resetView(true);
     }
   }, { passive: false });
 
-  /* ── Delegación: click en cualquier img dentro de .map-container ── */
+  /* ── Delegación: click en img dentro de .map-container ── */
   document.getElementById('detail').addEventListener('click', e => {
-    const img = e.target.closest('.map-container img');
-    if (img && img.complete && img.naturalWidth > 0) {
-      openLightbox(img.src);
+    const mapImg = e.target.closest('.map-container img');
+    if (mapImg && mapImg.complete && mapImg.naturalWidth > 0) {
+      open(mapImg.src);
     }
   });
 
