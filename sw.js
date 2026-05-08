@@ -1,4 +1,4 @@
-const CACHE = 'caminos-ar-v1';
+const CACHE = 'caminos-ar-v2';
 const ASSETS = [
   './',
   './index.html',
