@@ -306,7 +306,12 @@ function renderDetail(d) {
           ? `<div class="gmaps-btn gmaps-nodisp">📍 Ruta no disponible en Google Maps</div>`
           : `<button class="gmaps-btn" onclick="openMaps('${esc(d.nombre)}','${esc(d.prov)}','${esc(d.tipo)}',${mapSrcJs})">` +
               `<svg width="15" height="15" viewBox="0 0 48 48"><path d="M24 4C16.27 4 10 10.27 10 18c0 10.5 14 26 14 26s14-15.5 14-26c0-7.73-6.27-14-14-14z" fill="#EA4335"/><circle cx="24" cy="18" r="5" fill="#fff"/></svg>` +
-              `Ver en Google Maps</button>`
+              `Ver en Google Maps</button>` +
+            (d.wazeSrc
+              ? `<a class="waze-btn" href="${d.wazeSrc}" target="_blank" rel="noopener">` +
+                  `<svg width="15" height="15" viewBox="0 0 48 48" fill="none"><ellipse cx="24" cy="26" rx="18" ry="16" fill="#33CCFF"/><circle cx="17" cy="30" r="3" fill="#fff"/><circle cx="31" cy="30" r="3" fill="#fff"/><path d="M17 22 Q24 16 31 22" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="33" cy="12" r="5" fill="#FF6B00"/></svg>` +
+                  `Abrir en Waze</a>`
+              : '')
         ) +
       `</div>` +
       (!d.mapImgHidden ? mapImg('', `Mapa de ${d.nombre}`, d.mapImg||null) : "") +
