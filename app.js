@@ -28,21 +28,31 @@ function toggleDone(d) {
 
 /* ── COMPARTIR ───────────────────────────────────────────── */
 function shareRuta(d) {
-  const url  = window.location.href.split('?')[0];
+  // Guardar en localStorage que esta ruta fue compartida
+  const k = itemKey(d);
+  localStorage.setItem('shared_' + k, '1');
+
+  // Generar slug para la URL
+  const slug = (d.tipo + '_' + d.nombre).toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+
+  const base = window.location.href.split('?')[0].split('#')[0];
+  const url  = `${base}?ruta=${encodeURIComponent(slug)}`;
+
   const tipo = d.tipo === 'RUTA ESCÉNICA' ? 'Ruta Escénica' : d.tipo.charAt(0) + d.tipo.slice(1).toLowerCase();
   const text = `${tipo} ${d.nombre} — ${d.prov}${d.alt ? ', ' + d.alt.toLocaleString('es-AR') + ' m' : ''}`;
   const full = `${text}\n${url}`;
 
   if (navigator.share) {
     navigator.share({ title: text, text: full, url })
+      .then(() => { renderList(); renderDetail(d); })
       .catch(() => {});
   } else {
-    // Fallback: copiar al portapapeles
     navigator.clipboard.writeText(full).then(() => {
       showToast('¡Link copiado al portapapeles!');
-    }).catch(() => {
-      showToast('No se pudo copiar');
-    });
+      renderList(); renderDetail(d);
+    }).catch(() => showToast('No se pudo copiar'));
   }
 }
 
@@ -239,7 +249,10 @@ function renderList() {
     const supBadge = d.sup!=="—"?`<span class="badge ${supCls}">${d.sup}</span>`:"";
 
     // Large icons in the list when active
-    const icons = (isFav?'<span class="ri-icon fav-icon">♥</span>':"")+(isDone?'<span class="ri-icon done-icon">✓</span>':"");
+    const shared = !!localStorage.getItem('shared_'+k);
+    const icons = (isFav?'<span class="ri-icon fav-icon" title="Favorito">♥</span>':"") +
+                  (isDone?'<span class="ri-icon done-icon" title="Visitado">✓</span>':"") +
+                  (shared?'<span class="ri-icon share-icon" title="Compartido">⇧</span>':"");
 
     el.innerHTML =
       `<div class="ri-type">${d.tipo}</div>` +
@@ -315,19 +328,23 @@ function renderDetail(d) {
       `<div class="hero-accent" style="color:${color}">${d.tipo}</div>` +
       `<div class="hero-title-row">` +
         `<div class="hero-title">${d.nombre}</div>` +
-        `<div class="hero-actions">` +
-          `<button class="action-btn fav-btn${isFav?" active":""}" onclick="toggleFav(currentDetail)">♥ <span class="action-label">Favorito</span></button>` +
-          `<button class="action-btn done-btn${isDone?" active":""}" onclick="toggleDone(currentDetail)">✓ <span class="action-label">Visitado</span></button>` +
-          `<button class="action-btn share-btn" onclick="shareRuta(currentDetail)" title="Compartir">` +
-            `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">` +
-              `<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>` +
-              `<line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>` +
-            `</svg>` +
-            `<span class="action-label">Compartir</span>` +
-          `</button>` +
+        `<div class="hero-state-badges">` +
+          (isFav  ? `<span class="state-badge fav-badge"  title="Favorito">♥</span>`   : '') +
+          (isDone ? `<span class="state-badge done-badge" title="Visitado">✓</span>`   : '') +
         `</div>` +
       `</div>` +
       `<div class="hero-loc">◈ ${d.prov}${d.ruta?" · "+d.ruta:""}</div>` +
+      `<div class="hero-actions">` +
+        `<button class="action-btn fav-btn${isFav?" active":""}" onclick="toggleFav(currentDetail)">♥ <span class="action-label">Favorito</span></button>` +
+        `<button class="action-btn done-btn${isDone?" active":""}" onclick="toggleDone(currentDetail)">✓ <span class="action-label">Visitado</span></button>` +
+        `<button class="action-btn share-btn" onclick="shareRuta(currentDetail)" title="Compartir">` +
+          `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">` +
+            `<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>` +
+            `<line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>` +
+          `</svg>` +
+          `<span class="action-label">Compartir</span>` +
+        `</button>` +
+      `</div>` +
     `</div>` +
 
     // Stats
@@ -437,6 +454,49 @@ document.querySelectorAll("#tipoSection .pill").forEach(b => {
   b.classList.toggle("active", b.textContent==="Todos");
 });
 renderList();
+
+/* ── DEEP LINK: abrir ruta desde URL ─────────────────────── */
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const rutaSlug = params.get('ruta');
+  if (!rutaSlug) return;
+
+  // Buscar la ruta cuyo slug coincida
+  function makeSlug(d) {
+    return (d.tipo + '_' + d.nombre).toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  }
+
+  const match = DATA.find(d => makeSlug(d) === rutaSlug);
+  if (!match) return;
+
+  // Activar el filtro correcto para que la ruta esté en la lista
+  activeTipo = match.tipo;
+  renderList();
+
+  // Encontrar y clickear el elemento de la lista
+  const list = document.getElementById('sideList');
+  const items = list.querySelectorAll('.route-item');
+  for (const el of items) {
+    // Comparar por nombre dentro del elemento
+    const nameEl = el.querySelector('.ri-name');
+    if (nameEl && nameEl.textContent.trim() === match.nombre) {
+      // En mobile ocultar sidebar
+      if (window.innerWidth <= 680) {
+        document.querySelector('.sidebar').style.display = 'none';
+      }
+      if (activeItemEl) activeItemEl.classList.remove('active');
+      el.classList.add('active');
+      activeItemEl = el;
+      document.querySelector('.main').classList.add('has-selection');
+      document.getElementById('detail').scrollTop = 0;
+      renderDetail(match);
+      history.replaceState({ itemIndex: DATA.indexOf(match) }, '');
+      break;
+    }
+  }
+})();
 
 // Estado base en el historial: impide que el primer "atrás" salga de la app
 history.replaceState({ base: true }, "");

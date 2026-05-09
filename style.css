@@ -133,8 +133,10 @@ body {
 .ri-icons { display: flex; gap: 2px; flex-shrink: 0; }
 .ri-icon { font-size: 36px; line-height: 1; transition: font-size 0.15s; }
 .route-item.active .ri-icon { font-size: 42px; }
-.fav-icon  { color: #C01020; }
-.done-icon { color: #1A6A1A; font-weight: 700; }
+.fav-icon   { color: #C01020; }
+.done-icon  { color: #1A6A1A; font-weight: 700; }
+.share-icon { color: #2A5A7A; font-size: 28px; }
+.route-item.active .share-icon { font-size: 32px; }
 
 .ri-prov { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--ink-md); margin-top: 2px; }
 .route-item.active .ri-prov { color: rgba(242,232,204,0.7); }
@@ -176,10 +178,15 @@ body {
 .hero-accent-bar { height: 4px; }
 .hero-band { padding: 14px 18px 12px; border-bottom: 1px solid var(--border); }
 .hero-accent { font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 4px; }
-.hero-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.hero-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 2px; }
 .hero-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--ink); line-height: 1.15; }
+.hero-state-badges { display: flex; gap: 5px; flex-shrink: 0; margin-top: 4px; }
+.state-badge { font-size: 15px; line-height: 1; }
+.state-badge.fav-badge  { color: #C0392B; }
+.state-badge.done-badge { color: #27AE60; }
+.state-badge.share-badge { color: #2A5A7A; font-size: 13px; }
 .hero-loc { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.8px; color: var(--ink-md); text-transform: uppercase; }
-.hero-actions { display: flex; gap: 5px; flex-shrink: 0; padding-top: 2px; flex-wrap: wrap; justify-content: flex-end; }
+.hero-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; justify-content: flex-start; }
 .action-btn {
   border-radius: 4px; border: 1.5px solid var(--border);
   background: rgba(255,255,255,0.6); font-size: 12px;
@@ -390,7 +397,11 @@ body {
   width: 72px;
   max-width: 90%;
   object-fit: contain;
+  /* Escala automática para íconos de distintos tamaños originales */
+  image-rendering: auto;
 }
+/* Todos los íconos de ruta en el grid usan el mismo tamaño visual */
+.icon-stat img { width: 72px; height: 72px; object-fit: contain; }
 
 /* ── Bloque Parque Nacional (ícono + descripción) ────────── */
 .pn-block {
