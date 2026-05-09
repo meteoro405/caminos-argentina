@@ -26,6 +26,39 @@ function toggleDone(d) {
   renderList(); renderDetail(d);
 }
 
+/* ── COMPARTIR ───────────────────────────────────────────── */
+function shareRuta(d) {
+  const url  = window.location.href.split('?')[0];
+  const tipo = d.tipo === 'RUTA ESCÉNICA' ? 'Ruta Escénica' : d.tipo.charAt(0) + d.tipo.slice(1).toLowerCase();
+  const text = `${tipo} ${d.nombre} — ${d.prov}${d.alt ? ', ' + d.alt.toLocaleString('es-AR') + ' m' : ''}`;
+  const full = `${text}\n${url}`;
+
+  if (navigator.share) {
+    navigator.share({ title: text, text: full, url })
+      .catch(() => {});
+  } else {
+    // Fallback: copiar al portapapeles
+    navigator.clipboard.writeText(full).then(() => {
+      showToast('¡Link copiado al portapapeles!');
+    }).catch(() => {
+      showToast('No se pudo copiar');
+    });
+  }
+}
+
+function showToast(msg) {
+  let t = document.getElementById('share-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'share-toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('visible');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('visible'), 2800);
+}
+
 /* ── TTS ──────────────────────────────────────────────────── */
 let isSpeaking = false;
 function speakObs(text, btnEl) {
@@ -271,6 +304,11 @@ function renderDetail(d) {
       `</div>`;
   }
 
+  det.classList.remove('detail-enter');
+  // forzar reflow para reiniciar la animación
+  void det.offsetWidth;
+  det.classList.add('detail-enter');
+
   det.innerHTML =
     `<div class="hero-accent-bar" style="background:${color}"></div>` +
     `<div class="hero-band">` +
@@ -280,6 +318,13 @@ function renderDetail(d) {
         `<div class="hero-actions">` +
           `<button class="action-btn fav-btn${isFav?" active":""}" onclick="toggleFav(currentDetail)">♥ <span class="action-label">Favorito</span></button>` +
           `<button class="action-btn done-btn${isDone?" active":""}" onclick="toggleDone(currentDetail)">✓ <span class="action-label">Visitado</span></button>` +
+          `<button class="action-btn share-btn" onclick="shareRuta(currentDetail)" title="Compartir">` +
+            `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">` +
+              `<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>` +
+              `<line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>` +
+            `</svg>` +
+            `<span class="action-label">Compartir</span>` +
+          `</button>` +
         `</div>` +
       `</div>` +
       `<div class="hero-loc">◈ ${d.prov}${d.ruta?" · "+d.ruta:""}</div>` +
