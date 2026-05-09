@@ -352,8 +352,11 @@ function renderDetail(d) {
       `<div class="stat icon-stat">${d.icono4 ? `<img src="iconos/${d.icono4}" class="stat-ruta-icon" alt="">` : ``}</div>` +
     `</div>` +
 
-    // Ícono Parque Nacional
-    (d.iconopn ? `<div class="pn-icon-box"><img src="iconos/${d.iconopn}" class="pn-icon" alt="Parque Nacional"></div>` : ``) +
+    // Ícono Parque Nacional + descripción PN
+    (d.iconopn || d.pnDesc ? `<div class="pn-block">` +
+      (d.iconopn ? `<img src="iconos/${d.iconopn}" class="pn-icon" alt="Parque Nacional">` : '') +
+      (d.pnDesc  ? `<p class="pn-desc">${d.pnDesc}</p>` : '') +
+    `</div>` : '') +
 
     // Descripción
     `<div class="desc-block"><div class="sec-title">Acerca de las ${tipoLabel}</div><p class="desc-txt">${desc}</p></div>` +

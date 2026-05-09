@@ -1,5 +1,7 @@
-const CACHE = 'caminos-ar-v11';
-const ASSETS = [
+const CACHE = 'caminos-ar-v13';
+
+/* Archivos que van a caché (app shell para offline) */
+const PRECACHE = [
   './',
   './index.html',
   './style.css',
@@ -8,7 +10,7 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(PRECACHE)));
   self.skipWaiting();
 });
 
@@ -20,7 +22,27 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('./index.html')))
+  const url = new URL(e.request.url);
+  const isCoreFile = ['/style.css', '/app.js', '/data.js', '/index.html', '/'].some(
+    p => url.pathname.endsWith(p)
   );
+
+  if (isCoreFile) {
+    /* Estrategia Network-First para archivos core:
+       intenta red primero, si falla usa caché */
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
+  } else {
+    /* Fotos, mapas, íconos: Cache-First (no cambian) */
+    e.respondWith(
+      caches.match(e.request).then(r => r || fetch(e.request).catch(() => {}))
+    );
+  }
 });
