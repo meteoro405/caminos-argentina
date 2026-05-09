@@ -440,9 +440,9 @@ window.addEventListener("popstate", (e) => {
   }
 
   function clampPan() {
-    // Cuánto puede moverse la imagen antes de salir del viewport
-    const scaledW = dispW * zoom;
-    const scaledH = dispH * zoom;
+    // Tamaño visual real = tamaño natural × zoom (zoom ya incluye el fit inicial)
+    const scaledW = natW * zoom;
+    const scaledH = natH * zoom;
     const limitX = Math.max(0, (scaledW - vpW) / 2);
     const limitY = Math.max(0, (scaledH - vpH) / 2);
     panX = Math.max(-limitX, Math.min(limitX, panX));
