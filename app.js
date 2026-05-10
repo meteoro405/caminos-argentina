@@ -64,6 +64,10 @@ function showToast(msg) {
     document.body.appendChild(t);
   }
   t.textContent = msg;
+  // Quitar clase primero para reiniciar la transición si ya estaba visible
+  t.classList.remove('visible');
+  // Forzar reflow para que la transición se dispare desde cero
+  void t.offsetWidth;
   t.classList.add('visible');
   clearTimeout(t._timer);
   t._timer = setTimeout(() => t.classList.remove('visible'), 2800);
@@ -492,7 +496,10 @@ renderList();
       document.querySelector('.main').classList.add('has-selection');
       document.getElementById('detail').scrollTop = 0;
       renderDetail(match);
-      history.replaceState({ itemIndex: DATA.indexOf(match) }, '');
+      // Primero estado base (para que "atrás" vuelva al menú)
+      // luego estado de la ruta encima
+      history.replaceState({ base: true }, '');
+      history.pushState({ itemIndex: DATA.indexOf(match) }, '');
       break;
     }
   }
