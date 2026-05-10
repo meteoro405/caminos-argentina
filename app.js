@@ -28,93 +28,32 @@ function toggleDone(d) {
 
 /* ── COMPARTIR ───────────────────────────────────────────── */
 function shareRuta(d) {
+  // Guardar en localStorage que esta ruta fue compartida
   const k = itemKey(d);
   localStorage.setItem('shared_' + k, '1');
-  renderList();
 
+  // Generar slug para la URL
   const slug = (d.tipo + '_' + d.nombre).toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 
   const base = window.location.href.split('?')[0].split('#')[0];
   const url  = `${base}?ruta=${encodeURIComponent(slug)}`;
+
   const tipo = d.tipo === 'RUTA ESCÉNICA' ? 'Ruta Escénica' : d.tipo.charAt(0) + d.tipo.slice(1).toLowerCase();
   const text = `${tipo} ${d.nombre} — ${d.prov}${d.alt ? ', ' + d.alt.toLocaleString('es-AR') + ' m' : ''}`;
   const full = `${text}\n${url}`;
-  const waUrl = 'https://wa.me/?text=' + encodeURIComponent(full);
 
-  // Remove existing sheet
-  document.getElementById('share-sheet')?.remove();
-  document.getElementById('share-backdrop')?.remove();
-
-  const backdrop = document.createElement('div');
-  backdrop.id = 'share-backdrop';
-  backdrop.onclick = closeShareSheet;
-  document.body.appendChild(backdrop);
-
-  const sheet = document.createElement('div');
-  sheet.id = 'share-sheet';
-  sheet.innerHTML =
-    '<div class="share-sheet-handle"></div>' +
-    '<div class="share-sheet-title">Compartir vía</div>' +
-    '<div class="share-sheet-options">' +
-      '<a class="share-opt share-opt-wa" href="' + waUrl + '" target="_blank" rel="noopener" onclick="closeShareSheet()">' +
-        '<svg width="34" height="34" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#25D366"/><path d="M23.5 8.5A10.5 10.5 0 0 0 5.5 16.5c0 1.85.49 3.58 1.35 5.07L5 27l5.58-1.83A10.5 10.5 0 1 0 23.5 8.5zm-7.5 16a8.5 8.5 0 0 1-4.74-1.43l-.34-.2-3.31 1.09 1.1-3.24-.22-.36A8.5 8.5 0 1 1 16 24.5zm4.66-6.35c-.26-.13-1.52-.75-1.76-.84-.23-.08-.4-.13-.57.13-.17.26-.65.84-.8 1-.15.17-.3.19-.55.06-.26-.13-1.08-.4-2.06-1.27-.76-.68-1.27-1.52-1.42-1.78-.15-.26-.01-.4.11-.52.12-.12.26-.3.39-.45.13-.15.17-.26.26-.43.09-.17.04-.32-.02-.45-.06-.13-.57-1.37-.78-1.87-.2-.49-.42-.42-.57-.43h-.49c-.17 0-.45.06-.68.32-.23.26-.89.87-.89 2.12 0 1.25.91 2.46 1.04 2.63.13.17 1.79 2.73 4.33 3.83.61.26 1.08.42 1.45.54.61.19 1.16.16 1.6.1.49-.07 1.52-.62 1.73-1.22.21-.6.21-1.11.15-1.22-.07-.09-.24-.15-.5-.28z" fill="#fff"/></svg>' +
-        '<span>WhatsApp</span>' +
-      '</a>' +
-      '<button class="share-opt" onclick="copyShareText(' + JSON.stringify(full) + ')">' +
-        '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#6a8fc8" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
-        '<span>Copiar link</span>' +
-      '</button>' +
-      (navigator.share ? '<button class="share-opt" onclick="nativeShare(' + JSON.stringify(text) + ',' + JSON.stringify(full) + ',' + JSON.stringify(url) + ')">' +
-        '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#c88a6a" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>' +
-        '<span>Más opciones</span>' +
-      '</button>' : '') +
-    '</div>' +
-    '<button class="share-cancel" onclick="closeShareSheet()">Cancelar</button>';
-  document.body.appendChild(sheet);
-  requestAnimationFrame(() => sheet.classList.add('open'));
-}
-
-function closeShareSheet() {
-  const s = document.getElementById('share-sheet');
-  const b = document.getElementById('share-backdrop');
-  if (s) { s.classList.remove('open'); setTimeout(() => s.remove(), 260); }
-  if (b) b.remove();
-}
-
-function copyShareText(text) {
-  closeShareSheet();
-  navigator.clipboard.writeText(text)
-    .then(() => showToast('¡Link copiado al portapapeles!'))
-    .catch(() => showToast('No se pudo copiar'));
-}
-
-function nativeShare(title, text, url) {
-  closeShareSheet();
-  navigator.share({ title, text, url }).catch(() => {});
-}
-
-function goNext(d) {
-  const filtered = getFiltered();
-  const idx = filtered.findIndex(r => r.tipo === d.tipo && r.nombre === d.nombre && r.prov === d.prov);
-  if (idx === -1 || idx >= filtered.length - 1) { showToast('Es el último camino de la lista'); return; }
-  const next = filtered[idx + 1];
-  renderList();
-  // Activate the next item in sidebar
-  const list = document.getElementById('sideList');
-  const items = list.querySelectorAll('.route-item');
-  const nextFiltered = getFiltered();
-  const nextIdx = nextFiltered.findIndex(r => r.tipo === next.tipo && r.nombre === next.nombre && r.prov === next.prov);
-  const el = items[nextIdx];
-  if (el) {
-    if (activeItemEl) activeItemEl.classList.remove('active');
-    el.classList.add('active');
-    activeItemEl = el;
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (navigator.share) {
+    navigator.share({ title: text, text: full, url })
+      .then(() => { renderList(); renderDetail(d); })
+      .catch(() => {});
+  } else {
+    navigator.clipboard.writeText(full).then(() => {
+      showToast('¡Link copiado al portapapeles!');
+      renderList(); renderDetail(d);
+    }).catch(() => showToast('No se pudo copiar'));
   }
-  document.getElementById('detail').scrollTop = 0;
-  renderDetail(next);
 }
 
 function showToast(msg) {
@@ -403,17 +342,11 @@ function renderDetail(d) {
         `<button class="action-btn fav-btn${isFav?" active":""}" onclick="toggleFav(currentDetail)">♥ <span class="action-label">Favorito</span></button>` +
         `<button class="action-btn done-btn${isDone?" active":""}" onclick="toggleDone(currentDetail)">✓ <span class="action-label">Visitado</span></button>` +
         `<button class="action-btn share-btn" onclick="shareRuta(currentDetail)" title="Compartir">` +
-          `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">` +
+          `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">` +
             `<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>` +
             `<line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>` +
           `</svg>` +
           `<span class="action-label">Compartir</span>` +
-        `</button>` +
-        `<button class="action-btn next-btn" onclick="goNext(currentDetail)" title="Siguiente">` +
-          `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">` +
-            `<polyline points="9 18 15 12 9 6"/>` +
-          `</svg>` +
-          `<span class="action-label">Siguiente</span>` +
         `</button>` +
       `</div>` +
     `</div>` +
@@ -489,15 +422,6 @@ function renderDetail(d) {
     (d.iconopn || d.pnDesc ? `<div class="pn-block">` +
       (d.iconopn ? `<img src="iconos/${d.iconopn}" class="pn-icon" alt="Parque Nacional">` : '') +
       (d.pnDesc  ? `<p class="pn-desc">${d.pnDesc}</p>` : '') +
-    `</div>` : '') +
-
-    // Lugares de Interés
-    (d.lugaresInteresTexto ? `<div class="lugares-block">` +
-      `<div class="sec-title">📍 Lugares de interés</div>` +
-      `<p class="lugares-txt">${d.lugaresInteresTexto}</p>` +
-      (d.lugarInteresFoto1 ? `<div class="lugar-foto-wrap"><img class="lugar-foto" src="fotos/${d.lugarInteresFoto1}" alt="Lugar de interés" onerror="this.parentElement.style.display='none'"/></div>` : '') +
-      (d.lugarInteresFoto2 ? `<div class="lugar-foto-wrap"><img class="lugar-foto" src="fotos/${d.lugarInteresFoto2}" alt="Lugar de interés" onerror="this.parentElement.style.display='none'"/></div>` : '') +
-      (d.lugarInteresFoto3 ? `<div class="lugar-foto-wrap"><img class="lugar-foto" src="fotos/${d.lugarInteresFoto3}" alt="Lugar de interés" onerror="this.parentElement.style.display='none'"/></div>` : '') +
     `</div>` : '') +
 
     // Descripción
