@@ -28,12 +28,19 @@ function toggleDone(d) {
 
 /* ── SIGUIENTE ÍTEM ─────────────────────────────────────── */
 function goNextItem() {
-  // Obtener la lista visible de rutas del sidebar
   const items = Array.from(document.querySelectorAll('#sideList .route-item'));
   if (!items.length || !activeItemEl) return;
   const idx = items.indexOf(activeItemEl);
   const nextEl = items[(idx + 1) % items.length];
   if (nextEl) nextEl.click();
+}
+
+function goPrevItem() {
+  const items = Array.from(document.querySelectorAll('#sideList .route-item'));
+  if (!items.length || !activeItemEl) return;
+  const idx = items.indexOf(activeItemEl);
+  const prevEl = items[(idx - 1 + items.length) % items.length];
+  if (prevEl) prevEl.click();
 }
 
 /* ── COMPARTIR ───────────────────────────────────────────── */
@@ -453,19 +460,37 @@ function renderDetail(d) {
       (d.pnDesc  ? `<p class="pn-desc">${d.pnDesc}</p>` : '') +
     `</div>` : '') +
 
-    // Lugares de Interés (texto + hasta 3 fotos)
-    (d.liTxt || d.liF1 || d.liF2 || d.liF3 ?
+    // Lugares de Interés (fotos con pie de foto)
+    (d.liF1 || d.liF2 || d.liF3 ?
       `<div class="li-block">` +
         `<div class="sec-title">Lugares de Interés</div>` +
-        (d.liTxt ? `<p class="li-txt">${d.liTxt}</p>` : '') +
-        (d.liF1  ? `<div class="li-photo-wrap map-container"><img src="fotos/${d.liF1}" class="li-photo" alt="Lugar de interés" onerror="this.parentElement.style.display='none'"/></div>` : '') +
-        (d.liF2  ? `<div class="li-photo-wrap map-container"><img src="fotos/${d.liF2}" class="li-photo" alt="Lugar de interés" onerror="this.parentElement.style.display='none'"/></div>` : '') +
-        (d.liF3  ? `<div class="li-photo-wrap map-container"><img src="fotos/${d.liF3}" class="li-photo" alt="Lugar de interés" onerror="this.parentElement.style.display='none'"/></div>` : '') +
+        (d.liF1 ? `<div class="li-item map-container">` +
+          `<img src="fotos/${d.liF1}" class="li-photo" alt="${d.liT1||'Lugar de interés'}" onerror="this.closest('.li-item').style.display='none'"/>` +
+          (d.liT1 ? `<p class="li-caption">${d.liT1}</p>` : '') +
+        `</div>` : '') +
+        (d.liF2 ? `<div class="li-item map-container">` +
+          `<img src="fotos/${d.liF2}" class="li-photo" alt="${d.liT2||'Lugar de interés'}" onerror="this.closest('.li-item').style.display='none'"/>` +
+          (d.liT2 ? `<p class="li-caption">${d.liT2}</p>` : '') +
+        `</div>` : '') +
+        (d.liF3 ? `<div class="li-item map-container">` +
+          `<img src="fotos/${d.liF3}" class="li-photo" alt="${d.liT3||'Lugar de interés'}" onerror="this.closest('.li-item').style.display='none'"/>` +
+          (d.liT3 ? `<p class="li-caption">${d.liT3}</p>` : '') +
+        `</div>` : '') +
       `</div>`
     : '') +
 
     // Descripción
     `<div class="desc-block"><div class="sec-title">Acerca de las ${tipoLabel}</div><p class="desc-txt">${desc}</p></div>` +
+    `<div class="nav-footer">` +
+      `<button class="nav-foot-btn prev-foot-btn" onclick="goPrevItem()">` +
+        `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>` +
+        `<span>Anterior</span>` +
+      `</button>` +
+      `<button class="nav-foot-btn next-foot-btn" onclick="goNextItem()">` +
+        `<span>Siguiente</span>` +
+        `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>` +
+      `</button>` +
+    `</div>` +
     `<div class="detail-footer"></div>`;
 }
 
