@@ -226,18 +226,18 @@ body {
 .state-badge.share-badge { color: #2A5A7A; font-size: 13px; }
 .hero-loc { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.8px; color: var(--ink-md); text-transform: uppercase; }
 .hero-actions {
-  display: flex; gap: 5px; margin-top: 10px;
-  flex-wrap: nowrap; overflow-x: auto;
-  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 10px 18px 0;
 }
-.hero-actions::-webkit-scrollbar { display: none; }
 .action-btn {
   border-radius: 4px; border: 1.5px solid var(--border);
   background: rgba(255,255,255,0.6); font-size: 11px;
   font-family: 'Inter', sans-serif; font-weight: 600;
-  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
-  padding: 6px 10px; transition: all 0.15s; color: var(--ink-lt);
-  white-space: nowrap; flex-shrink: 0; box-sizing: border-box;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;
+  padding: 8px 4px; transition: all 0.15s; color: var(--ink-lt);
+  white-space: nowrap; box-sizing: border-box; width: 100%;
 }
 .action-btn:hover { border-color: var(--bronze); background: white; color: var(--ink); }
 .action-label { font-size: 11px; }
@@ -464,8 +464,9 @@ body {
   gap: 14px;
 }
 .pn-icon {
-  width: 220px;
-  height: 220px;
+  width: 300px;
+  height: 300px;
+  max-width: 90vw;
   object-fit: contain;
 }
 .pn-desc {
@@ -597,28 +598,12 @@ body {
 
 /* ── LUGARES DE INTERÉS ──────────────────────────────────── */
 .li-block {
-  padding: 14px 18px;
+  padding: 14px 0 0 0;
   border-top: 1px solid var(--border);
 }
-.li-txt {
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  line-height: 1.65;
-  color: var(--ink);
-  margin: 8px 0 12px 0;
-}
-.li-photo-wrap {
-  width: 100%;
+.li-block > .sec-title {
+  padding: 0 18px;
   margin-bottom: 10px;
-  border-radius: 6px;
-  overflow: hidden;
-}
-.li-photo {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-  cursor: zoom-in;
 }
 
 /* ── BOTÓN SIGUIENTE ─────────────────────────────────────── */
@@ -637,20 +622,29 @@ body {
 .li-item {
   width: 100%;
   margin-bottom: 14px;
-  border-radius: 6px;
   overflow: hidden;
-  border: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  /* Sin border-radius para que llegue de borde a borde */
+  margin-left: -0px;
+}
+.li-photo {
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+  object-fit: cover;
+  cursor: zoom-in;
 }
 .li-caption {
   font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  color: var(--ink-md);
-  background: rgba(90,58,26,0.05);
-  padding: 7px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  background: rgba(90,58,26,0.06);
+  padding: 10px 18px;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.55;
   border-top: 1px solid var(--border);
-  font-style: italic;
 }
 
 /* ── BOTONES ANTERIOR / SIGUIENTE AL PIE ─────────────────── */
