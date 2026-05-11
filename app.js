@@ -499,6 +499,35 @@ document.querySelectorAll("#tipoSection .pill").forEach(b => {
 });
 renderList();
 
+/* ── CARRUSEL TOOLBAR ────────────────────────────────────── */
+(function() {
+  const track = document.getElementById('toolbarTrack');
+  const wrap  = document.getElementById('toolbarWrap');
+  if (!track || !wrap) return;
+
+  function updateFade() {
+    const atStart = track.scrollLeft <= 4;
+    const atEnd   = track.scrollLeft >= track.scrollWidth - track.clientWidth - 4;
+    wrap.classList.toggle('at-start', atStart);
+    wrap.classList.toggle('at-end',   atEnd);
+  }
+
+  track.addEventListener('scroll', updateFade, { passive: true });
+  updateFade();
+
+  // Al activar un pill, hacer scroll para centrarlo en el track
+  track.addEventListener('click', e => {
+    const pill = e.target.closest('.pill');
+    if (!pill) return;
+    setTimeout(() => {
+      const trackRect = track.getBoundingClientRect();
+      const pillRect  = pill.getBoundingClientRect();
+      const offset = pillRect.left - trackRect.left - (trackRect.width - pillRect.width) / 2;
+      track.scrollBy({ left: offset, behavior: 'smooth' });
+    }, 60);
+  });
+})();
+
 /* ── DEEP LINK: abrir ruta desde URL ─────────────────────── */
 (function() {
   const params = new URLSearchParams(window.location.search);

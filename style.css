@@ -74,13 +74,52 @@ body {
 
 /* ── TOOLBAR ─────────────────────────────────────────────── */
 .toolbar {
-  background: #3A1A06; display: flex; flex-shrink: 0;
+  background: #3A1A06;
   border-bottom: 1px solid rgba(160,85,42,0.4);
-  overflow-x: auto; position: sticky; top: 68px; z-index: 90;
+  position: sticky; top: 68px; z-index: 90;
+  overflow: hidden;
 }
-.toolbar::-webkit-scrollbar { display: none; }
-.tab-section { display: flex; gap: 4px; padding: 6px 10px; border-right: 1px solid rgba(160,85,42,0.2); align-items: center; flex-shrink: 0; }
-.tab-section--special { border-left: 1px solid rgba(160,85,42,0.35); }
+/* Carrusel: una sola fila scrolleable con scroll suave y snap */
+.toolbar-track {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  white-space: nowrap;
+  /* Scroll snap para que cada pill "encaje" */
+  scroll-snap-type: x proximity;
+}
+.toolbar-track::-webkit-scrollbar { display: none; }
+/* Separador entre grupos de pills */
+.toolbar-sep {
+  width: 1px;
+  height: 20px;
+  background: rgba(160,85,42,0.35);
+  flex-shrink: 0;
+}
+/* Difuminado en los bordes para indicar que hay más contenido */
+.toolbar::before,
+.toolbar::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 28px;
+  pointer-events: none;
+  z-index: 1;
+}
+.toolbar::before { left: 0; background: linear-gradient(to right, #3A1A06 40%, transparent); }
+.toolbar::after  { right: 0; background: linear-gradient(to left, #3A1A06 40%, transparent); }
+/* Quitar ::before cuando scrollX=0 (manejado con JS) */
+.toolbar.at-start::before { display: none; }
+.toolbar.at-end::after    { display: none; }
+
+/* Las tab-section ahora son solo grupos lógicos inline */
+.tab-section { display: contents; }
+.tab-section--special { display: contents; }
 
 .pill {
   font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600;
@@ -186,15 +225,19 @@ body {
 .state-badge.done-badge { color: #27AE60; }
 .state-badge.share-badge { color: #2A5A7A; font-size: 13px; }
 .hero-loc { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 0.8px; color: var(--ink-md); text-transform: uppercase; }
-.hero-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; justify-content: flex-start; }
+.hero-actions {
+  display: flex; gap: 5px; margin-top: 10px;
+  flex-wrap: nowrap; overflow-x: auto;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.hero-actions::-webkit-scrollbar { display: none; }
 .action-btn {
   border-radius: 4px; border: 1.5px solid var(--border);
-  background: rgba(255,255,255,0.6); font-size: 12px;
+  background: rgba(255,255,255,0.6); font-size: 11px;
   font-family: 'Inter', sans-serif; font-weight: 600;
-  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-  padding: 7px 12px; transition: all 0.15s; color: var(--ink-lt); white-space: nowrap;
-  /* Mismo ancho mínimo para los 3 botones */
-  min-width: 96px; box-sizing: border-box;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  padding: 6px 10px; transition: all 0.15s; color: var(--ink-lt);
+  white-space: nowrap; flex-shrink: 0; box-sizing: border-box;
 }
 .action-btn:hover { border-color: var(--bronze); background: white; color: var(--ink); }
 .action-label { font-size: 11px; }
@@ -399,11 +442,17 @@ body {
   width: 72px;
   max-width: 90%;
   object-fit: contain;
-  /* Escala automática para íconos de distintos tamaños originales */
   image-rendering: auto;
 }
-/* Todos los íconos de ruta en el grid usan el mismo tamaño visual */
-.icon-stat img { width: 72px; height: 72px; object-fit: contain; }
+/* Todos los íconos del grid al mismo tamaño, sin excepción */
+.icon-stat { overflow: hidden; }
+.icon-stat img {
+  width: 72px !important;
+  height: 72px !important;
+  max-width: 72px !important;
+  max-height: 72px !important;
+  object-fit: contain;
+}
 
 /* ── Bloque Parque Nacional (ícono + descripción) ────────── */
 .pn-block {

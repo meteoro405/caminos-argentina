@@ -62,19 +62,24 @@
       </div>
     </header>
 
-    <div class="toolbar">
-      <div class="tab-section" id="tipoSection">
-        <button class="pill" id="tipo-TODOS" onclick="filterTipo('TODOS',this)">Todos</button>
-        <button class="pill" onclick="filterTipo('ABRA',this)">Abras</button>
-        <button class="pill" onclick="filterTipo('CUESTA',this)">Cuestas</button>
-        <button class="pill" onclick="filterTipo('QUEBRADA',this)">Quebradas</button>
-        <button class="pill" onclick="filterTipo('RUTA ESCÉNICA',this)">Rutas Escénicas</button>
-      </div>
-      <div class="tab-section tab-section--special">
-        <button class="pill filter-special active" onclick="filterSpecial('TODOS',this)">Todos</button>
-        <button class="pill filter-special fav-pill" onclick="filterSpecial('FAVORITOS',this)">♥ Favs</button>
-        <button class="pill filter-special done-pill" onclick="filterSpecial('VISITADOS',this)">✓ Visitados</button>
-        <button class="pill random-pill" onclick="showRandom()">🎲 Al azar</button>
+    <div class="toolbar" id="toolbarWrap">
+      <div class="toolbar-track" id="toolbarTrack">
+        <!-- Grupo tipo -->
+        <div class="tab-section" id="tipoSection">
+          <button class="pill" id="tipo-TODOS" onclick="filterTipo('TODOS',this)">Todos</button>
+          <button class="pill" onclick="filterTipo('ABRA',this)">Abras</button>
+          <button class="pill" onclick="filterTipo('CUESTA',this)">Cuestas</button>
+          <button class="pill" onclick="filterTipo('QUEBRADA',this)">Quebradas</button>
+          <button class="pill" onclick="filterTipo('RUTA ESCÉNICA',this)">Rutas Escénicas</button>
+        </div>
+        <div class="toolbar-sep"></div>
+        <!-- Grupo especial -->
+        <div class="tab-section tab-section--special">
+          <button class="pill filter-special active" onclick="filterSpecial('TODOS',this)">Todos</button>
+          <button class="pill filter-special fav-pill" onclick="filterSpecial('FAVORITOS',this)">♥ Favs</button>
+          <button class="pill filter-special done-pill" onclick="filterSpecial('VISITADOS',this)">✓ Visitados</button>
+          <button class="pill random-pill" onclick="showRandom()">🎲 Al azar</button>
+        </div>
       </div>
     </div>
 
