@@ -631,8 +631,9 @@ body {
 .li-photo {
   width: 100% !important;
   height: auto !important;
+  max-height: none !important;
   display: block;
-  object-fit: cover;
+  object-fit: fill;   /* estira para ocupar todo el ancho sin recortar */
   cursor: zoom-in;
 }
 .li-caption {
@@ -645,6 +646,14 @@ body {
   margin: 0;
   line-height: 1.55;
   border-top: 1px solid var(--border);
+}
+
+/* ── ICONO MASTER ───────────────────────────────────────── */
+.master-block {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+  padding: 20px 18px;
 }
 
 /* ── BOTONES ANTERIOR / SIGUIENTE AL PIE ─────────────────── */

@@ -440,6 +440,9 @@ function renderDetail(d) {
       : ""
     ) +
 
+    // Ícono Master (antes de Mejor época, mismo estilo que PN)
+    (d.iconoMaster ? `<div class="pn-block master-block"><img src="iconos/${d.iconoMaster}" class="pn-icon" alt="Ruta principal"></div>` : '') +
+
     // Mejor época
     (d.epoca ? `<div class="info-block epoca-block"><div class="sec-title">Mejor época</div><p class="info-txt epoca-txt">🗓 ${d.epoca}</p></div>` : "") +
 
