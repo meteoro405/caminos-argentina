@@ -461,26 +461,33 @@ function renderDetail(d) {
     (d.fiestas ? `<div class="info-block fiestas-block"><div class="sec-title">🎉 Fiestas y Eventos</div><p class="info-txt fiestas-txt">${d.fiestas}</p></div>` : '') +
 
     // Ícono Parque Nacional + descripción PN
-    (d.iconopn || d.pnDesc ? `<div class="pn-block">` +
-      (d.iconopn ? `<img src="iconos/${d.iconopn}" class="pn-icon" alt="Parque Nacional">` : '') +
-      (d.pnDesc  ? `<p class="pn-desc">${d.pnDesc}</p>` : '') +
-    `</div>` : '') +
-
-    // 4 íconos del PN (mismas cajas que las superiores)
-    (d.iconoPn1 || d.iconoPn2 || d.iconoPn3 || d.iconoPn4 ?
-      `<div class="stats-grid pn-icons-grid">` +
-        (d.iconoPn1 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn1}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
-        (d.iconoPn2 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn2}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
-        (d.iconoPn3 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn3}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
-        (d.iconoPn4 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn4}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
+    (d.iconopn || d.pnDesc ?
+      `<div class="pn-block">` +
+        `<div class="sec-title pn-section-title">Parque Nacional Cercano a Esta Ruta</div>` +
+        (d.iconopn ? `<img src="iconos/${d.iconopn}" class="pn-icon" alt="Parque Nacional">` : '') +
+        (d.pnDesc  ? `<p class="pn-desc">${d.pnDesc}</p>` : '') +
       `</div>`
     : '') +
 
-    // Teléfono y mail del PN
+    // 4 íconos del PN con etiqueta
+    (d.iconoPn1 || d.iconoPn2 || d.iconoPn3 || d.iconoPn4 ?
+      `<div class="pn-icons-section">` +
+        `<div class="sec-title pn-section-title">Actividades en Este Parque Nacional</div>` +
+        `<div class="stats-grid pn-icons-grid">` +
+          (d.iconoPn1 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn1}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
+          (d.iconoPn2 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn2}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
+          (d.iconoPn3 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn3}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
+          (d.iconoPn4 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn4}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
+        `</div>` +
+      `</div>`
+    : '') +
+
+    // Contacto del PN con etiqueta
     (d.telPn || d.mailPn ?
-      `<div class="info-block contact-pn-block">` +
-        (d.telPn  ? `<a href="tel:${d.telPn}"  class="contact-pn-link">📞 ${d.telPn}</a>`  : '') +
-        (d.mailPn ? `<a href="mailto:${d.mailPn}" class="contact-pn-link">✉ ${d.mailPn}</a>` : '') +
+      `<div class="contact-pn-block">` +
+        `<div class="sec-title pn-section-title">Contacto Parque Nacional</div>` +
+        (d.telPn  ? `<a href="tel:${d.telPn}"   class="contact-pn-link"><span class="contact-icon">📞</span>${d.telPn}</a>`  : '') +
+        (d.mailPn ? `<a href="mailto:${d.mailPn}" class="contact-pn-link"><span class="contact-icon">✉️</span>${d.mailPn}</a>` : '') +
       `</div>`
     : '') +
 

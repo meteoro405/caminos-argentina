@@ -719,3 +719,49 @@ body {
   gap: 6px;
 }
 .contact-pn-link:hover { text-decoration: underline; }
+
+/* ── ETIQUETAS DE SECCIÓN PN ─────────────────────────────── */
+.pn-section-title {
+  /* Mismo estilo que .sec-title pero con borde superior para separar */
+  border-top: 1px solid rgba(160,85,42,0.25);
+  padding-top: 12px;
+  margin-bottom: 8px;
+}
+/* El bloque PN ya tiene su propio padding; la etiqueta se alinea dentro */
+.pn-block .pn-section-title {
+  padding: 12px 18px 0;
+  margin-bottom: 12px;
+  border-top: none; /* el borde ya lo pone el pn-block padre */
+}
+
+/* Sección de íconos PN con padding lateral para la etiqueta */
+.pn-icons-section {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.pn-icons-section .pn-section-title {
+  padding: 0 18px;
+  border-top: none;
+  margin-bottom: 8px;
+}
+.pn-icons-section .pn-icons-grid {
+  border-top: none;
+}
+
+/* Contacto PN con padding y etiqueta */
+.contact-pn-block {
+  border-top: 1px solid var(--border);
+  padding: 12px 18px 14px;
+}
+.contact-pn-block .pn-section-title {
+  border-top: none;
+  padding-top: 0;
+  margin-bottom: 10px;
+}
+
+/* Ícono de contacto (tel y mail) del mismo tamaño */
+.contact-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
