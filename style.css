@@ -685,3 +685,37 @@ body {
   border-color: var(--bronze);
   color: var(--ink);
 }
+
+/* ── FIESTAS Y EVENTOS ───────────────────────────────────── */
+.fiestas-block { border-top: 1px solid var(--border); }
+.fiestas-txt {
+  font-size: 13px; line-height: 1.6;
+  color: var(--ink); margin: 0;
+}
+
+/* ── GRID DE ÍCONOS PN (idéntico al superior) ────────────── */
+.pn-icons-grid {
+  border-top: 1px solid var(--border);
+  border-bottom: none;
+  margin-top: 0;
+}
+
+/* ── CONTACTO PN ─────────────────────────────────────────── */
+.contact-pn-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+}
+.contact-pn-link {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1A5276;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.contact-pn-link:hover { text-decoration: underline; }
