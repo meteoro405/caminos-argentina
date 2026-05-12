@@ -752,7 +752,8 @@ window.addEventListener("popstate", (e) => {
     document.body.style.overflow = '';
   }
 
-  btnClose.addEventListener('click', close);
+  btnClose.addEventListener('click', e => { e.stopPropagation(); close(); });
+  btnClose.addEventListener('touchend', e => { e.stopPropagation(); e.preventDefault(); close(); });
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && overlay.classList.contains('open')) close();
