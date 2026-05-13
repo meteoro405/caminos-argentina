@@ -778,3 +778,22 @@ body {
   line-height: 1;
   flex-shrink: 0;
 }
+
+/* ── WIDGET DE CLIMA ─────────────────────────────────────── */
+.weather-block {
+  border-top: 1px solid var(--border);
+  padding: 12px 0 0 0;
+}
+.weather-block .sec-title {
+  padding: 0 18px;
+  margin-bottom: 10px;
+}
+.weather-inner {
+  margin: 0 18px 14px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.weather-inner a.weatherwidget-io {
+  display: block;
+}

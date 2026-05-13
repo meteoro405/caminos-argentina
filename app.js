@@ -523,6 +523,23 @@ function renderDetail(d) {
       `</div>`
     : '') +
 
+    // Widget de clima
+    (d.weatherUrl ?
+      `<div class="weather-block">` +
+        `<div class="sec-title">🌤 Clima en ${d.weatherLabel}</div>` +
+        `<div class="weather-inner">` +
+          `<a class="weatherwidget-io"` +
+            ` href="${d.weatherUrl}"` +
+            ` data-label_1="${d.weatherLabel.toUpperCase()}"` +
+            ` data-label_2="clima"` +
+            ` data-icons="Climacons Animated"` +
+            ` data-mode="Current"` +
+            ` data-theme="original"` +
+          `>${d.weatherLabel} clima</a>` +
+        `</div>` +
+      `</div>`
+    : '') +
+
     // Descripción
     `<div class="desc-block"><div class="sec-title">Acerca de las ${tipoLabel}</div><p class="desc-txt">${desc}</p></div>` +
     `<div class="nav-footer">` +
@@ -567,6 +584,30 @@ document.querySelectorAll("#tipoSection .pill").forEach(b => {
   b.classList.toggle("active", b.textContent==="Todos");
 });
 renderList();
+
+/* ── WEATHER WIDGET ─────────────────────────────────────── */
+(function() {
+  // Cargar el script de weatherwidget solo una vez
+  function loadWeatherWidget() {
+    if (document.getElementById('weatherwidget-io-js')) {
+      // Ya cargado — refrescar widgets existentes
+      if (window.__weatherwidget_init) window.__weatherwidget_init();
+      return;
+    }
+    var js = document.createElement('script');
+    js.id  = 'weatherwidget-io-js';
+    js.src = 'https://weatherwidget.io/js/widget.min.js';
+    document.body.appendChild(js);
+  }
+
+  // Observar cuándo se agrega el widget al DOM y cargarlo
+  const observer = new MutationObserver(() => {
+    if (document.querySelector('.weatherwidget-io')) {
+      loadWeatherWidget();
+    }
+  });
+  observer.observe(document.getElementById('detail'), { childList: true, subtree: true });
+})();
 
 /* ── CARRUSEL TOOLBAR ────────────────────────────────────── */
 (function() {
