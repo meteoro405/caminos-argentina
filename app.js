@@ -526,7 +526,7 @@ function renderDetail(d) {
     // Widget de clima
     (d.weatherUrl ?
       `<div class="weather-block">` +
-        `<div class="sec-title">🌤 El clima en el punto cercano a la ruta: ${d.weatherLabel}</div>` +
+        `<div class="sec-title">🌤 El clima en el punto cercano a la ruta</div>` +
         `<div class="weather-inner">` +
           `<a class="weatherwidget-io"` +
             ` href="${d.weatherUrl}"` +

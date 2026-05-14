@@ -274,7 +274,7 @@ body {
   border-bottom: 1px solid rgba(160,85,42,0.25);
 }
 .obs-title-row .sec-title { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-.obs-tag { display: block; width: 100%; box-sizing: border-box; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; padding: 8px 11px; border-radius: 3px; line-height: 1.5; }
+.obs-tag { display: block; width: 100%; box-sizing: border-box; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; padding: 10px 11px; border-radius: 3px; line-height: 1.7; white-space: pre-line; }
 .obs-warn  { background: rgba(196,149,42,0.13); color: #6b4408; border: 1px solid rgba(196,149,42,0.3); }
 .obs-info  { background: rgba(42,90,122,0.10);  color: #1e4a6a; border: 1px solid rgba(42,90,122,0.22); }
 .obs-route { background: rgba(45,92,30,0.10);   color: #1e4a14; border: 1px solid rgba(45,92,30,0.22); }
@@ -473,21 +473,22 @@ body {
   gap: 14px;
 }
 .pn-icon {
-  width: 300px;
-  height: 300px;
+  width: 270px;
+  height: 270px;
   max-width: 90vw;
   object-fit: contain;
 }
 .pn-desc {
   font-family: 'Inter', sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 400;
-  line-height: 1.65;
+  line-height: 1.7;
   color: var(--ink);
   background: rgba(45,92,30,0.07);
   border: 1px solid rgba(45,92,30,0.18);
   border-left: 3px solid rgba(45,92,30,0.45);
   border-radius: 4px;
+  white-space: pre-line;
   padding: 10px 14px;
   margin: 0;
   width: 100%;
@@ -651,13 +652,14 @@ body {
 }
 .li-caption {
   font-family: 'Inter', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--ink);
   background: rgba(90,58,26,0.06);
   padding: 10px 18px;
   margin: 0;
-  line-height: 1.55;
+  line-height: 1.7;
+  white-space: pre-line;
   border-top: 1px solid var(--border);
 }
 
@@ -702,8 +704,9 @@ body {
 /* ── FIESTAS Y EVENTOS ───────────────────────────────────── */
 .fiestas-block { border-top: 1px solid var(--border); }
 .fiestas-txt {
-  font-size: 13px; line-height: 1.6;
+  font-size: 15px; line-height: 1.7;
   color: var(--ink); margin: 0;
+  white-space: pre-line;
 }
 
 /* ── GRID DE ÍCONOS PN (idéntico al superior) ────────────── */
