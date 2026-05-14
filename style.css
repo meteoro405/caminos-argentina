@@ -779,6 +779,20 @@ body {
   flex-shrink: 0;
 }
 
+/* ── ÍCONOS DE SEGURIDAD PN (más grandes) ───────────────── */
+.pn-seg-grid {
+  border-top: none;
+}
+.pn-seg-grid .icon-stat {
+  min-height: 96px;
+}
+.pn-seg-grid .stat-ruta-icon {
+  width: 96px !important;
+  height: 96px !important;
+  max-width: 96px !important;
+  max-height: 96px !important;
+}
+
 /* ── WIDGET DE CLIMA ─────────────────────────────────────── */
 .weather-block {
   border-top: 1px solid var(--border);

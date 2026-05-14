@@ -486,7 +486,7 @@ function renderDetail(d) {
     (d.iconoPn5 || d.iconoPn6 || d.iconoPn7 || d.iconoPn8 ?
       `<div class="pn-icons-section">` +
         `<div class="sec-title pn-section-title">Recomendaciones de Seguridad</div>` +
-        `<div class="stats-grid pn-icons-grid">` +
+        `<div class="stats-grid pn-icons-grid pn-seg-grid">` +
           (d.iconoPn5 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn5}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
           (d.iconoPn6 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn6}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
           (d.iconoPn7 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn7}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
@@ -526,7 +526,7 @@ function renderDetail(d) {
     // Widget de clima
     (d.weatherUrl ?
       `<div class="weather-block">` +
-        `<div class="sec-title">🌤 Clima en ${d.weatherLabel}</div>` +
+        `<div class="sec-title">🌤 El clima en el punto cercano a la ruta: ${d.weatherLabel}</div>` +
         `<div class="weather-inner">` +
           `<a class="weatherwidget-io"` +
             ` href="${d.weatherUrl}"` +
