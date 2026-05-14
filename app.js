@@ -534,7 +534,15 @@ function renderDetail(d) {
             ` data-label_2="clima"` +
             ` data-icons="Climacons Animated"` +
             ` data-mode="Current"` +
-            ` data-theme="original"` +
+            ` data-theme="pure"` +
+            ` data-basecolor="#F2E8CC"` +
+            ` data-textcolor="#4F3B26"` +
+            ` data-highcolor="#C0100A"` +
+            ` data-lowcolor="#1A5276"` +
+            ` data-suncolor="#A0552A"` +
+            ` data-cloudscolor="#7A5A38"` +
+            ` data-raincolor="#1A5276"` +
+            ` data-snowcolor="#2E86C1"` +
           `>${d.weatherLabel} clima</a>` +
         `</div>` +
       `</div>`
