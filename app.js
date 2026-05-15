@@ -523,6 +523,23 @@ function renderDetail(d) {
       `</div>`
     : '') +
 
+    // Paso Fronterizo
+    (d.pasoPf || d.horarioPf ?
+      `<div class="pf-block">` +
+        `<div class="pf-header">` +
+          (d.iconoPf ? `<img src="iconos/${d.iconoPf}" class="pf-icon" alt="Paso Fronterizo"/>` : '') +
+          `<div class="sec-title pf-title">Paso Fronterizo Cercano</div>` +
+        `</div>` +
+        (d.pasoPf   ? `<p class="pf-txt pf-nombre">${d.pasoPf.replace(/\n/g,'<br>')}</p>` : '') +
+        (d.horarioPf? `<p class="pf-txt pf-horario">🕐 ${d.horarioPf.replace(/\n/g,'<br>')}</p>` : '') +
+        (d.urlPf    ?
+          `<div class="pf-iframe-wrap">` +
+            `<iframe src="${d.urlPf}" class="pf-iframe" loading="lazy" title="Estado del paso fronterizo"></iframe>` +
+          `</div>`
+        : '') +
+      `</div>`
+    : '') +
+
     // Widget de clima
     (d.weatherUrl ?
       `<div class="weather-block">` +
