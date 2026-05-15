@@ -532,10 +532,14 @@ function renderDetail(d) {
         `</div>` +
         (d.pasoPf   ? `<p class="pf-txt pf-nombre">${d.pasoPf.replace(/\n/g,'<br>')}</p>` : '') +
         (d.horarioPf? `<p class="pf-txt pf-horario">🕐 ${d.horarioPf.replace(/\n/g,'<br>')}</p>` : '') +
-        (d.urlPf    ?
-          `<div class="pf-iframe-wrap">` +
-            `<iframe src="${d.urlPf}" class="pf-iframe" loading="lazy" title="Estado del paso fronterizo"></iframe>` +
-          `</div>`
+        (d.urlPf ?
+          `<a href="${d.urlPf}" target="_blank" rel="noopener" class="pf-btn">` +
+            `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">` +
+              `<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>` +
+              `<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>` +
+            `</svg>` +
+            `Ver estado actual del paso` +
+          `</a>`
         : '') +
       `</div>`
     : '') +
