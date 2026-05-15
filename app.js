@@ -556,7 +556,7 @@ function renderDetail(d) {
     // Widget de clima
     (d.weatherUrl ?
       `<div class="weather-block">` +
-        `<div class="sec-title">🌤 El clima en el punto cercano a la ruta</div>` +
+        `<div class="sec-title">🌤 ${d.weatherUrl2 ? 'El clima en puntos cercanos a la ruta' : 'El clima en un punto cercano a la ruta'}</div>` +
         `<div class="weather-inner">` +
           `<a class="weatherwidget-io"` +
             ` href="${d.weatherUrl}"` +
@@ -575,6 +575,26 @@ function renderDetail(d) {
             ` data-snowcolor="#2E86C1"` +
           `>${d.weatherLabel} clima</a>` +
         `</div>` +
+        (d.weatherUrl2 ?
+          `<div class="weather-inner weather-inner-2">` +
+            `<a class="weatherwidget-io"` +
+              ` href="${d.weatherUrl2}"` +
+              ` data-label_1="${d.weatherLabel2.toUpperCase()}"` +
+              ` data-label_2="clima"` +
+              ` data-icons="Climacons Animated"` +
+              ` data-mode="Current"` +
+              ` data-theme="pure"` +
+              ` data-basecolor="#F2E8CC"` +
+              ` data-textcolor="#4F3B26"` +
+              ` data-highcolor="#C0100A"` +
+              ` data-lowcolor="#1A5276"` +
+              ` data-suncolor="#A0552A"` +
+              ` data-cloudscolor="#7A5A38"` +
+              ` data-raincolor="#1A5276"` +
+              ` data-snowcolor="#2E86C1"` +
+            `>${d.weatherLabel2} clima</a>` +
+          `</div>`
+        : '') +
       `</div>`
     : '') +
 
