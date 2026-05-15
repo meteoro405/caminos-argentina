@@ -26,6 +26,36 @@ function toggleDone(d) {
   renderList(); renderDetail(d);
 }
 
+/* ── PANEL PASO FRONTERIZO ───────────────────────────────── */
+function openPfPanel(url) {
+  let panel = document.getElementById('pf-panel');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'pf-panel';
+    panel.innerHTML =
+      '<div class="pf-panel-overlay" onclick="closePfPanel()"></div>' +
+      '<div class="pf-panel-box">' +
+        '<div class="pf-panel-header">' +
+          '<span class="pf-panel-title">Estado del Paso</span>' +
+          '<button class="pf-panel-close" onclick="closePfPanel()">✕</button>' +
+        '</div>' +
+        '<iframe id="pf-panel-frame" class="pf-panel-frame" src="" loading="lazy"></iframe>' +
+      '</div>';
+    document.body.appendChild(panel);
+  }
+  document.getElementById('pf-panel-frame').src = url;
+  panel.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closePfPanel() {
+  const panel = document.getElementById('pf-panel');
+  if (panel) {
+    panel.classList.remove('open');
+    document.getElementById('pf-panel-frame').src = '';
+    document.body.style.overflow = '';
+  }
+}
+
 /* ── SIGUIENTE ÍTEM ─────────────────────────────────────── */
 function goNextItem() {
   const items = Array.from(document.querySelectorAll('#sideList .route-item'));
@@ -523,27 +553,6 @@ function renderDetail(d) {
       `</div>`
     : '') +
 
-    // Paso Fronterizo
-    (d.pasoPf || d.horarioPf ?
-      `<div class="pf-block">` +
-        `<div class="pf-header">` +
-          (d.iconoPf ? `<img src="iconos/${d.iconoPf}" class="pf-icon" alt="Paso Fronterizo"/>` : '') +
-          `<div class="sec-title pf-title">Paso Fronterizo Cercano</div>` +
-        `</div>` +
-        (d.pasoPf   ? `<p class="pf-txt pf-nombre">${d.pasoPf.replace(/\n/g,'<br>')}</p>` : '') +
-        (d.horarioPf? `<p class="pf-txt pf-horario">🕐 ${d.horarioPf.replace(/\n/g,'<br>')}</p>` : '') +
-        (d.urlPf ?
-          `<a href="${d.urlPf}" target="_blank" rel="noopener" class="pf-btn">` +
-            `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">` +
-              `<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>` +
-              `<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>` +
-            `</svg>` +
-            `Ver estado actual del paso` +
-          `</a>`
-        : '') +
-      `</div>`
-    : '') +
-
     // Widget de clima
     (d.weatherUrl ?
       `<div class="weather-block">` +
@@ -566,6 +575,24 @@ function renderDetail(d) {
             ` data-snowcolor="#2E86C1"` +
           `>${d.weatherLabel} clima</a>` +
         `</div>` +
+      `</div>`
+    : '') +
+
+    // Paso Fronterizo (después del clima, antes de Acerca de)
+    (d.pasoPf || d.horarioPf ?
+      `<div class="pf-block">` +
+        `<div class="sec-title">Paso Fronterizo Cercano</div>` +
+        (d.pasoPf   ? `<p class="pf-txt pf-nombre">${d.pasoPf.replace(/\n/g,'<br>')}</p>` : '') +
+        (d.horarioPf? `<p class="pf-txt pf-horario">🕐 ${d.horarioPf.replace(/\n/g,'<br>')}</p>` : '') +
+        (d.urlPf    ?
+          `<button class="pf-btn" onclick="openPfPanel('${d.urlPf}')">` +
+            `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">` +
+              `<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>` +
+              `<polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>` +
+            `</svg>` +
+            `Ver estado actual del paso` +
+          `</button>`
+        : '') +
       `</div>`
     : '') +
 

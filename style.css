@@ -870,3 +870,64 @@ body {
   transition: background 0.15s;
 }
 .pf-btn:hover { background: rgba(26,82,118,0.16); }
+
+/* ── PANEL PASO FRONTERIZO ───────────────────────────────── */
+#pf-panel {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+}
+#pf-panel.open { display: flex; align-items: flex-end; }
+
+.pf-panel-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,5,2,0.55);
+  backdrop-filter: blur(2px);
+}
+.pf-panel-box {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--parch-light);
+  border-top: 3px solid var(--bronze);
+  border-radius: 14px 14px 0 0;
+  overflow: hidden;
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
+}
+.pf-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.pf-panel-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--bronze);
+}
+.pf-panel-close {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.5);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink);
+}
+.pf-panel-frame {
+  width: 100%;
+  flex: 1;
+  border: none;
+  min-height: 500px;
+}
