@@ -442,7 +442,7 @@ function renderDetail(d) {
       `</div>` : "") +
 
     // Mapa
-    `<div class="map-section"><div class="sec-title">Mapa</div>` +
+    `<div class="map-section"><div class="sec-title"><span class="sec-title-icon">🗺</span>Mapa</div>` +
       `<div class="map-btns-row">` +
         (d.mapNoDisp
           ? `<div class="gmaps-btn gmaps-nodisp">📍 Ruta no disponible en Google Maps</div>`
@@ -462,7 +462,7 @@ function renderDetail(d) {
 
     // Galería — usa foto1/foto2 explícitos si existen, si no cae al slug
     (!d.noPhotos
-      ? `<div class="photos-section" id="gallery_${slug}"><div class="sec-title">Galería</div>` +
+      ? `<div class="photos-section" id="gallery_${slug}"><div class="sec-title"><span class="sec-title-icon">📷</span>Galería</div>` +
         `<div class="photos-pair">` +
           `<div class="photo-container" id="foto1_${slug}"><img src="fotos/${d.foto1||slug+'_1.jpg'}" alt="foto 1" onload="this.nextElementSibling.style.display='none'" onerror="this.parentElement.style.display='none';checkGalleryEmpty('gallery_${slug}')"/><div class="photo-placeholder"><div class="photo-placeholder-icon">📷</div><div class="photo-placeholder-txt">Foto 1</div></div></div>` +
           `<div class="photo-container" id="foto2_${slug}"><img src="fotos/${d.foto2||slug+'_2.jpg'}" alt="foto 2" onload="this.nextElementSibling.style.display='none'" onerror="this.parentElement.style.display='none';checkGalleryEmpty('gallery_${slug}')"/><div class="photo-placeholder"><div class="photo-placeholder-icon">📷</div><div class="photo-placeholder-txt">Foto 2</div></div></div>` +
@@ -491,9 +491,10 @@ function renderDetail(d) {
     (d.fiestas ? `<div class="info-block fiestas-block"><div class="sec-title">🎉 Fiestas y Eventos</div><p class="info-txt fiestas-txt">${d.fiestas}</p></div>` : '') +
 
     // Ícono Parque Nacional + descripción PN
-    (d.iconopn || d.pnDesc ?
+    (d.iconopn || d.pnDesc || d.pnNombre ?
       `<div class="pn-block">` +
-        `<div class="sec-title pn-section-title">Parque Nacional Cercano a Esta Ruta</div>` +
+        `<div class="sec-title pn-section-title">🏔 Parque Nacional Cercano a Esta Ruta</div>` +
+        (d.pnNombre ? `<div class="pn-nombre">${d.pnNombre}</div>` : '') +
         (d.iconopn ? `<img src="iconos/${d.iconopn}" class="pn-icon" alt="Parque Nacional">` : '') +
         (d.pnDesc  ? `<p class="pn-desc">${d.pnDesc}</p>` : '') +
       `</div>`
@@ -502,7 +503,7 @@ function renderDetail(d) {
     // 4 íconos del PN con etiqueta
     (d.iconoPn1 || d.iconoPn2 || d.iconoPn3 || d.iconoPn4 ?
       `<div class="pn-icons-section">` +
-        `<div class="sec-title pn-section-title">Actividades en Este Parque Nacional</div>` +
+        `<div class="sec-title pn-section-title">🏃 Actividades en Esta Área</div>` +
         `<div class="stats-grid pn-icons-grid">` +
           (d.iconoPn1 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn1}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
           (d.iconoPn2 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn2}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
@@ -619,8 +620,14 @@ function renderDetail(d) {
     // Paso Fronterizo (después del clima, antes de Acerca de)
     (d.pasoPf || d.horarioPf ?
       `<div class="pf-block">` +
-        `<div class="sec-title">Paso Fronterizo Cercano</div>` +
-        (d.pasoPf   ? `<p class="pf-txt pf-nombre">${d.pasoPf.replace(/\n/g,'<br>')}</p>` : '') +
+        `<div class="sec-title"><span class="sec-title-icon">🛂</span>Paso Fronterizo Cercano</div>` +
+        (d.pasoPf   ? (() => {
+          const lines = d.pasoPf.split('\\n');
+          const firstLine = lines[0];
+          const restLines = lines.slice(1).join('<br>');
+          return `<p class="pf-txt pf-nombre pf-nombre-grande">${firstLine}</p>` +
+                 (restLines ? `<p class="pf-txt pf-ciudades">${restLines}</p>` : '');
+        })() : '') +
         (d.horarioPf? `<p class="pf-txt pf-horario">🕐 ${d.horarioPf.replace(/\n/g,'<br>')}</p>` : '') +
         (d.urlPf ?
           `<a href="${d.urlPf}" target="_blank" rel="noopener" class="pf-btn">` +
@@ -635,7 +642,7 @@ function renderDetail(d) {
     : '') +
 
     // Descripción
-    `<div class="desc-block"><div class="sec-title">Acerca de las ${tipoLabel}</div><p class="desc-txt">${desc}</p></div>` +
+    `<div class="desc-block"><div class="sec-title"><span class="sec-title-icon">ℹ</span>Acerca de las ${tipoLabel}</div><p class="desc-txt">${desc}</p></div>` +
     `<div class="nav-footer">` +
       `<button class="nav-foot-btn prev-foot-btn" onclick="goPrevItem()">` +
         `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>` +
