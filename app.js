@@ -502,7 +502,7 @@ function renderDetail(d) {
     // 4 íconos del PN con etiqueta
     (d.iconoPn1 || d.iconoPn2 || d.iconoPn3 || d.iconoPn4 ?
       `<div class="pn-icons-section">` +
-        `<div class="sec-title pn-section-title">Actividades en Este Parque Nacional</div>` +
+        `<div class="sec-title pn-section-title"><span class="sec-title-icon">🏃</span>Actividades en Este Parque Nacional</div>` +
         `<div class="stats-grid pn-icons-grid">` +
           (d.iconoPn1 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn1}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
           (d.iconoPn2 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn2}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
@@ -537,7 +537,7 @@ function renderDetail(d) {
     // Lugares de Interés (fotos con pie de foto)
     (d.liF1 || d.liF2 || d.liF3 ?
       `<div class="li-block">` +
-        `<div class="sec-title">Lugares de Interés</div>` +
+        `<div class="sec-title"><span class="sec-title-icon">📍</span>Lugares de Interés</div>` +
         (d.liF1 ? `<div class="li-item map-container">` +
           `<img src="fotos/${d.liF1}" class="li-photo" alt="${d.liT1||'Lugar de interés'}" onerror="this.closest('.li-item').style.display='none'"/>` +
           (d.liT1 ? `<p class="li-caption">${d.liT1}</p>` : '') +
@@ -575,13 +575,51 @@ function renderDetail(d) {
             ` data-snowcolor="#2E86C1"` +
           `>${d.weatherLabel} clima</a>` +
         `</div>` +
+        (d.weatherUrl2 ?
+          `<div class="weather-inner weather-inner-extra">` +
+            `<a class="weatherwidget-io"` +
+              ` href="${d.weatherUrl2}"` +
+              ` data-label_1="${(d.weatherLabel2||'').toUpperCase()}"` +
+              ` data-label_2="clima"` +
+              ` data-icons="Climacons Animated"` +
+              ` data-mode="Current"` +
+              ` data-theme="pure"` +
+              ` data-basecolor="#F2E8CC"` +
+              ` data-textcolor="#4F3B26"` +
+              ` data-highcolor="#C0100A"` +
+              ` data-lowcolor="#1A5276"` +
+              ` data-suncolor="#A0552A"` +
+              ` data-cloudscolor="#7A5A38"` +
+              ` data-raincolor="#1A5276"` +
+              ` data-snowcolor="#2E86C1"` +
+            `>${d.weatherLabel2||''} clima</a>` +
+          `</div>` : '') +
+        (d.weatherUrl3 ?
+          `<div class="weather-inner weather-inner-extra">` +
+            `<a class="weatherwidget-io"` +
+              ` href="${d.weatherUrl3}"` +
+              ` data-label_1="${(d.weatherLabel3||'').toUpperCase()}"` +
+              ` data-label_2="clima"` +
+              ` data-icons="Climacons Animated"` +
+              ` data-mode="Current"` +
+              ` data-theme="pure"` +
+              ` data-basecolor="#F2E8CC"` +
+              ` data-textcolor="#4F3B26"` +
+              ` data-highcolor="#C0100A"` +
+              ` data-lowcolor="#1A5276"` +
+              ` data-suncolor="#A0552A"` +
+              ` data-cloudscolor="#7A5A38"` +
+              ` data-raincolor="#1A5276"` +
+              ` data-snowcolor="#2E86C1"` +
+            `>${d.weatherLabel3||''} clima</a>` +
+          `</div>` : '') +
       `</div>`
     : '') +
 
     // Paso Fronterizo (después del clima, antes de Acerca de)
     (d.pasoPf || d.horarioPf ?
       `<div class="pf-block">` +
-        `<div class="sec-title">Paso Fronterizo Cercano</div>` +
+        `<div class="sec-title"><span class="sec-title-icon">🛂</span>Paso Fronterizo Cercano</div>` +
         (d.pasoPf ? (() => {
           const pfLines = d.pasoPf.split('\n');
           const pfFirst = pfLines[0];
@@ -627,7 +665,7 @@ function renderDetail(d) {
     `<div class="detail-footer"></div>`;
 
   // Inicializar widget de clima si esta ruta lo tiene
-  if (d.weatherUrl) {
+  if (d.weatherUrl || d.weatherUrl2 || d.weatherUrl3) {
     setTimeout(() => {
       if (window.__weatherwidget_init) {
         window.__weatherwidget_init();

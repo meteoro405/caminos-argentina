@@ -356,11 +356,12 @@ body {
 }
 .aero-nombre {
   font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink-md);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
   margin: 0 0 8px 0;
-  line-height: 1.4;
+  line-height: 1.6;
+  white-space: pre-line;
 }
 .aero-tel {
   display: inline-flex;
@@ -853,6 +854,9 @@ body {
 }
 .weather-inner a.weatherwidget-io {
   display: block;
+}
+.weather-inner-extra {
+  margin-top: 6px;
 }
 
 /* ── PASO FRONTERIZO ─────────────────────────────────────── */
