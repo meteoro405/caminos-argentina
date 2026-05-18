@@ -379,6 +379,11 @@ body {
   text-decoration: none;
 }
 .aero-tel:hover { background: rgba(26,82,118,0.15); }
+.aero-btns-row {
+  display: flex; gap: 7px; flex-wrap: wrap;
+  align-items: center; margin-bottom: 12px;
+}
+.aero-map-btn { flex: 1; }
 
 
 .desc-block { padding: 12px 18px; border-bottom: 1px solid var(--border); }

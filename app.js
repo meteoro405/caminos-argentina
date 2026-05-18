@@ -647,7 +647,12 @@ function renderDetail(d) {
         `<div class="sec-title"><span class="sec-title-icon">✈</span>Aeropuerto Más Cercano a la Ruta</div>` +
         (d.aeroCiudad ? `<p class="aero-ciudad">${d.aeroCiudad}</p>` : '') +
         (d.aeroNombre ? `<p class="aero-nombre">${d.aeroNombre}</p>` : '') +
-        (d.aeroTel    ? `<a class="aero-tel" href="tel:${d.aeroTel}">📞 ${d.aeroTel}</a>` : '') +
+        `<div class="aero-btns-row">` +
+          (d.aeroTel  ? `<a class="aero-tel" href="tel:${d.aeroTel}">📞 ${d.aeroTel}</a>` : '') +
+          (d.aeroUbic ? `<button class="gmaps-btn aero-map-btn" onclick="openMaps('Aeropuerto','${d.aeroCiudad||''}','','${d.aeroUbic}')">` +
+            `<svg width="15" height="15" viewBox="0 0 48 48"><path d="M24 4C16.27 4 10 10.27 10 18c0 10.5 14 26 14 26s14-15.5 14-26c0-7.73-6.27-14-14-14z" fill="#EA4335"/><circle cx="24" cy="18" r="5" fill="#fff"/></svg>` +
+            `Ver en Google Maps</button>` : '') +
+        `</div>` +
       `</div>`
     : '') +
 
