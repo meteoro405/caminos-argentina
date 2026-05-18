@@ -335,7 +335,8 @@ body {
 
 /* ── MEJOR ÉPOCA & PRECAUCIONES ──────────────────────────── */
 .info-block { padding: 12px 18px; border-bottom: 1px solid var(--border); }
-.info-txt { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; line-height: 1.6; color: var(--ink-md); }
+.info-txt { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; line-height: 1.6; color: var(--ink-md); }
+.sec-title-icon { margin-right: 5px; font-style: normal; opacity: 0.85; }
 .epoca-txt { color: #1A5A1A; }
 .prec-txt  { color: #7A3A00; }
 
@@ -704,7 +705,7 @@ body {
 /* ── FIESTAS Y EVENTOS ───────────────────────────────────── */
 .fiestas-block { border-top: 1px solid var(--border); }
 .fiestas-txt {
-  font-size: 15px; line-height: 1.7;
+  font-size: 16px; line-height: 1.7;
   color: var(--ink); margin: 0;
   white-space: pre-line;
 }
@@ -810,6 +811,9 @@ body {
   border-radius: 6px;
   overflow: hidden;
   border: 1px solid var(--border);
+}
+.weather-inner-extra {
+  margin-top: 8px;
 }
 .weather-inner a.weatherwidget-io {
   display: block;

@@ -474,10 +474,10 @@ function renderDetail(d) {
     (d.iconoMaster ? `<div class="pn-block master-block"><img src="iconos/${d.iconoMaster}" class="pn-icon" alt="Ruta principal"></div>` : '') +
 
     // Mejor época
-    (d.epoca ? `<div class="info-block epoca-block"><div class="sec-title">Mejor época</div><p class="info-txt epoca-txt">🗓 ${d.epoca}</p></div>` : "") +
+    (d.epoca ? `<div class="info-block epoca-block"><div class="sec-title"><span class="sec-title-icon">🗓</span>Mejor época</div><p class="info-txt epoca-txt">${d.epoca}</p></div>` : "") +
 
     // Precauciones
-    (d.prec ? `<div class="info-block prec-block"><div class="sec-title">Precauciones</div><p class="info-txt prec-txt">⚠ ${d.prec}</p></div>` : "") +
+    (d.prec ? `<div class="info-block prec-block"><div class="sec-title"><span class="sec-title-icon">⚠</span>Precauciones</div><p class="info-txt prec-txt">${d.prec}</p></div>` : "") +
 
     // Iconos
     `<div class="stats-grid icon-grid">` +
@@ -575,6 +575,44 @@ function renderDetail(d) {
             ` data-snowcolor="#2E86C1"` +
           `>${d.weatherLabel} clima</a>` +
         `</div>` +
+        (d.weatherUrl2 ?
+          `<div class="weather-inner weather-inner-extra">` +
+            `<a class="weatherwidget-io"` +
+              ` href="${d.weatherUrl2}"` +
+              ` data-label_1="${(d.weatherLabel2||'').toUpperCase()}"` +
+              ` data-label_2="clima"` +
+              ` data-icons="Climacons Animated"` +
+              ` data-mode="Current"` +
+              ` data-theme="pure"` +
+              ` data-basecolor="#F2E8CC"` +
+              ` data-textcolor="#4F3B26"` +
+              ` data-highcolor="#C0100A"` +
+              ` data-lowcolor="#1A5276"` +
+              ` data-suncolor="#A0552A"` +
+              ` data-cloudscolor="#7A5A38"` +
+              ` data-raincolor="#1A5276"` +
+              ` data-snowcolor="#2E86C1"` +
+            `>${d.weatherLabel2||''} clima</a>` +
+          `</div>` : '') +
+        (d.weatherUrl3 ?
+          `<div class="weather-inner weather-inner-extra">` +
+            `<a class="weatherwidget-io"` +
+              ` href="${d.weatherUrl3}"` +
+              ` data-label_1="${(d.weatherLabel3||'').toUpperCase()}"` +
+              ` data-label_2="clima"` +
+              ` data-icons="Climacons Animated"` +
+              ` data-mode="Current"` +
+              ` data-theme="pure"` +
+              ` data-basecolor="#F2E8CC"` +
+              ` data-textcolor="#4F3B26"` +
+              ` data-highcolor="#C0100A"` +
+              ` data-lowcolor="#1A5276"` +
+              ` data-suncolor="#A0552A"` +
+              ` data-cloudscolor="#7A5A38"` +
+              ` data-raincolor="#1A5276"` +
+              ` data-snowcolor="#2E86C1"` +
+            `>${d.weatherLabel3||''} clima</a>` +
+          `</div>` : '') +
       `</div>`
     : '') +
 
@@ -611,7 +649,7 @@ function renderDetail(d) {
     `<div class="detail-footer"></div>`;
 
   // Inicializar widget de clima si esta ruta lo tiene
-  if (d.weatherUrl) {
+  if (d.weatherUrl || d.weatherUrl2 || d.weatherUrl3) {
     setTimeout(() => {
       if (window.__weatherwidget_init) {
         window.__weatherwidget_init();
