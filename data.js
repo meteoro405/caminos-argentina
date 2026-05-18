@@ -124,3 +124,15 @@ const DATA = [
   {tipo:"ABRA",nombre:'DEL SAUCE',prov:'Salta',alt:3200,ruta:'RP 13',sup:'RIPIO',dif:'ALTA',obs:'DE ITURBE (JUJUY) HASTA RODEO COLORADO (SALTA). DISTANCIA 80 kilómetros. CAMINO DE MONTAÑA SIN SERVICIOS EN ALTURA. PRECAUCION.',mapSrc:'https://www.google.com/maps/embed?pb=!1m34!1m12!1m3!1d192317.6989393542!2d-65.3337644376639!3d-22.79368556771281!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m19!3e0!4m5!1s0x9404f139d7adb6c7%3A0x7e29d747719f1fee!2sIturbe%2C%20Jujuy!3m2!1d-22.9789513!2d-65.3534155!4m5!1s0x9404f768fbab680f%3A0x44a17acd922acb6b!2sChaupi%20Rodeo%2C%20Jujuy!3m2!1d-22.9310013!2d-65.3103302!4m5!1s0x94044de54d0eaf45%3A0x1fa2442ed3768965!2sRodeo%20Colorado%2C%20Salta!3m2!1d-22.6604538!2d-65.1791977!5e0!3m2!1ses!2sar!4v1777736378423!5m2!1ses!2sar',wazeSrc:'https://waze.com/ul?ll=-22.793686,-65.333764&navigate=yes',noPhotos:true,prec:'RUTA EN ALTURA - CAMINO ANGOSTO DE RIPIO y/o TIERRA - TEMPERATURA BAJA EN INVIERNO',icono3:'sin_senal.png',icono4:'icono_temperatura_baja.png',iconoMaster:'rp_13_juj.png',weatherUrl:'https://forecast7.com/es/n23d20n65d35/humahuaca/',weatherLabel:'Humahuaca'},
   {tipo:"ABRA",nombre:'DEL VIENTO',prov:'Jujuy',alt:4450,ruta:'RP 83',sup:'RIPIO',dif:'ALTA',obs:'Desde Humahuaca hasta el Abra del Viento. Distancia 46 kilómetros.',mapSrc:'https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d117302.48876856279!2d-65.21824506051748!3d-23.253900597975008!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e0!4m5!1s0x9404e9a4ba40a8c1%3A0x5ff8703d0479ecf9!2sHumahuaca%2C%20Jujuy!3m2!1d-23.203962999999998!2d-65.34860929999999!4m5!1s0x94052658f850e533%3A0xfd9f38a030bc04e9!2sSanta%20Ana%2C%20Jujuy!3m2!1d-23.3557381!2d-64.9880769!5e0!3m2!1ses!2sar!4v1777596158480!5m2!1ses!2sar',wazeSrc:'https://waze.com/ul?ll=-23.253901,-65.218245&navigate=yes',noPhotos:true,mapImg:'mapa_ruta_de_las_yungas.jpg',mapImg2:'mapa_abras_jujuy.jpg',hasMap2:true,epoca:'Desde mayo hasta octubre.',prec:'RUTA EN ALTURA - CAMINO ANGOSTO DE RIPIO y/o TIERRA - TEMPERATURA BAJA EN INVIERNO',icono:'icono_altura_extrema.png',icono2:'sin_combustible.png',icono3:'icono_viento.png',icono4:'icono_temperatura_baja.png',iconoMaster:'rp_83_juj.png',weatherUrl:'https://forecast7.com/es/n23d20n65d35/humahuaca/',weatherLabel:'Humahuaca'}
 ];
+const TIPO_DESCS = {
+  "ABRA":         "Collado o paso entre montañas que comunica dos vertientes. Suelen ser los puntos más altos de las rutas de montaña.",
+  "CUESTA":       "Terreno en pendiente pronunciada que atraviesa una sierra o serranía. Las cuestas argentinas conectan valles y llanuras con zonas de mayor altura.",
+  "QUEBRADA":     "Paso estrecho entre montañas, generalmente con un curso de agua que lo recorre. Son corredores naturales de gran belleza paisajística y cultural.",
+  "RUTA ESCÉNICA":"Tramo de ruta especialmente seleccionado por su valor paisajístico, cultural o natural. Ofrecen al viajero una experiencia visual y sensorial excepcional a lo largo del recorrido.",
+};
+const TIPO_COLORS = {
+  "ABRA":         "#7A5A18",
+  "CUESTA":       "#5A3A18",
+  "QUEBRADA":     "#3A5A18",
+  "RUTA ESCÉNICA":"#1A3A5A",
+};
