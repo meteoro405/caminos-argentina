@@ -1,11 +1,14 @@
 {
-  "name": "De Cuestas, Valles y Quebradas",
-  "short_name": "CuestasValles",
-  "start_url": ".",
+  "name": "De Cuestas, Abras y Quebradas",
+  "short_name": "Caminos AR",
+  "description": "Rutas escénicas, cuestas, abras y quebradas de Argentina",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#1a1a2e",
-  "theme_color": "#1a1a2e",
+  "background_color": "#5C2A0E",
+  "theme_color": "#7A3A18",
+  "orientation": "any",
   "icons": [
-    { "src": "iconos/rp_12_sc.png", "sizes": "72x72", "type": "image/png" }
+    { "src": "pwa_icon_192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "pwa_icon_512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
