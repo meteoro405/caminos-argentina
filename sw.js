@@ -1,4 +1,4 @@
-const CACHE = 'caminos-ar-v45';
+const CACHE = 'caminos-ar-v46';
 
 /* Archivos que van a caché (app shell para offline) */
 const PRECACHE = [
@@ -28,6 +28,8 @@ self.addEventListener('fetch', e => {
   );
 
   if (isCoreFile) {
+    /* Estrategia Network-First para archivos core:
+       intenta red primero, si falla usa caché */
     e.respondWith(
       fetch(e.request)
         .then(res => {
@@ -38,6 +40,7 @@ self.addEventListener('fetch', e => {
         .catch(() => caches.match(e.request))
     );
   } else {
+    /* Fotos, mapas, íconos: Cache-First (no cambian) */
     e.respondWith(
       caches.match(e.request).then(r => r || fetch(e.request).catch(() => {}))
     );

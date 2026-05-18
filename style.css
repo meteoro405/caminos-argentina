@@ -167,7 +167,7 @@ body {
 .route-item.active .ri-type { color: var(--bronze-lt); }
 
 .ri-name-row { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
-.ri-name { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1.3; text-transform: uppercase; }
+.ri-name { font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1.3; }
 .route-item.active .ri-name { color: var(--parch-light); }
 
 /* Icons in list — bigger when active */
@@ -220,7 +220,7 @@ body {
 .hero-band { padding: 14px 18px 0; border-bottom: 1px solid var(--border); }
 .hero-accent { font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 4px; }
 .hero-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 2px; }
-.hero-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--ink); line-height: 1.15; text-transform: uppercase; }
+.hero-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: var(--ink); line-height: 1.15; }
 .hero-state-badges { display: flex; gap: 5px; flex-shrink: 0; margin-top: 4px; }
 .state-badge { font-size: 15px; line-height: 1; }
 .state-badge.fav-badge  { color: #C0392B; }
@@ -335,13 +335,12 @@ body {
 
 /* ── MEJOR ÉPOCA & PRECAUCIONES ──────────────────────────── */
 .info-block { padding: 12px 18px; border-bottom: 1px solid var(--border); }
-.info-txt { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; line-height: 1.6; color: var(--ink-md); }
-.sec-title-icon { margin-right: 5px; font-style: normal; opacity: 0.85; }
+.info-txt { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; line-height: 1.6; color: var(--ink-md); }
 .epoca-txt { color: #1A5A1A; }
 .prec-txt  { color: #7A3A00; }
 
 /* ── DESCRIPCIÓN ─────────────────────────────────────────── */
-/* ── AEROPUERTO MÁS CERCANO ──────────────────────────────── */
+/* ── AEROPUERTO ──────────────────────────────────────────── */
 .aero-block {
   border-top: 1px solid var(--border);
   padding: 14px 18px 4px;
@@ -377,7 +376,6 @@ body {
   padding: 5px 12px;
   margin-bottom: 12px;
   text-decoration: none;
-  transition: background 0.15s;
 }
 .aero-tel:hover { background: rgba(26,82,118,0.15); }
 
@@ -506,15 +504,6 @@ body {
 }
 
 /* ── Bloque Parque Nacional (ícono + descripción) ────────── */
-.pn-nombre {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--bronze);
-  text-align: center;
-  margin: 4px 18px 10px;
-  letter-spacing: 0.3px;
-}
 .pn-block {
   display: flex;
   flex-direction: column;
@@ -755,7 +744,7 @@ body {
 /* ── FIESTAS Y EVENTOS ───────────────────────────────────── */
 .fiestas-block { border-top: 1px solid var(--border); }
 .fiestas-txt {
-  font-size: 16px; line-height: 1.7;
+  font-size: 15px; line-height: 1.7;
   color: var(--ink); margin: 0;
   white-space: pre-line;
 }
@@ -857,13 +846,10 @@ body {
   margin-bottom: 10px;
 }
 .weather-inner {
-  margin: 0 18px 6px;
+  margin: 0 18px 14px;
   border-radius: 6px;
   overflow: hidden;
   border: 1px solid var(--border);
-}
-.weather-inner-extra {
-  margin-top: 4px;
 }
 .weather-inner a.weatherwidget-io {
   display: block;
