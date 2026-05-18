@@ -493,7 +493,7 @@ function renderDetail(d) {
     // Ícono Parque Nacional + descripción PN
     (d.iconopn || d.pnDesc || d.pnNombre ?
       `<div class="pn-block">` +
-        `<div class="sec-title pn-section-title">🏔 Parque Nacional Cercano a Esta Ruta</div>` +
+        `<div class="sec-title pn-section-title">Parque Nacional Cercano a Esta Ruta</div>` +
         (d.pnNombre ? `<div class="pn-nombre">${d.pnNombre}</div>` : '') +
         (d.iconopn ? `<img src="iconos/${d.iconopn}" class="pn-icon" alt="Parque Nacional">` : '') +
         (d.pnDesc  ? `<p class="pn-desc">${d.pnDesc}</p>` : '') +
@@ -516,7 +516,7 @@ function renderDetail(d) {
     // Íconos de seguridad PN (5-8) con etiqueta
     (d.iconoPn5 || d.iconoPn6 || d.iconoPn7 || d.iconoPn8 ?
       `<div class="pn-icons-section">` +
-        `<div class="sec-title pn-section-title">Recomendaciones de Seguridad</div>` +
+        `<div class="sec-title pn-section-title"><span class="sec-title-icon">🛡</span>Recomendaciones de Seguridad</div>` +
         `<div class="stats-grid pn-icons-grid pn-seg-grid">` +
           (d.iconoPn5 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn5}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
           (d.iconoPn6 ? `<div class="stat-box icon-stat"><img src="iconos/${d.iconoPn6}" class="stat-ruta-icon" alt=""/></div>` : '<div class="stat-box icon-stat"></div>') +
@@ -529,7 +529,7 @@ function renderDetail(d) {
     // Contacto del PN con etiqueta
     (d.telPn || d.mailPn ?
       `<div class="contact-pn-block">` +
-        `<div class="sec-title pn-section-title">Contacto Parque Nacional</div>` +
+        `<div class="sec-title pn-section-title"><span class="sec-title-icon">📞</span>Contacto Parque Nacional</div>` +
         (d.telPn  ? `<a href="tel:${d.telPn}"   class="contact-pn-link"><span class="contact-icon">📞</span>${d.telPn}</a>`  : '') +
         (d.mailPn ? `<a href="mailto:${d.mailPn}" class="contact-pn-link"><span class="contact-icon">✉️</span>${d.mailPn}</a>` : '') +
       `</div>`
@@ -622,7 +622,7 @@ function renderDetail(d) {
       `<div class="pf-block">` +
         `<div class="sec-title"><span class="sec-title-icon">🛂</span>Paso Fronterizo Cercano</div>` +
         (d.pasoPf   ? (() => {
-          const lines = d.pasoPf.split('\\n');
+          const lines = d.pasoPf.split('\n');
           const firstLine = lines[0];
           const restLines = lines.slice(1).join('<br>');
           return `<p class="pf-txt pf-nombre pf-nombre-grande">${firstLine}</p>` +
@@ -641,8 +641,18 @@ function renderDetail(d) {
       `</div>`
     : '') +
 
+    // Aeropuerto más cercano
+    (d.aeroCiudad || d.aeroNombre ?
+      `<div class="aero-block">` +
+        `<div class="sec-title"><span class="sec-title-icon">✈</span>Aeropuerto Más Cercano a la Ruta</div>` +
+        (d.aeroCiudad ? `<p class="aero-ciudad">${d.aeroCiudad}</p>` : '') +
+        (d.aeroNombre ? `<p class="aero-nombre">${d.aeroNombre}</p>` : '') +
+        (d.aeroTel    ? `<a class="aero-tel" href="tel:${d.aeroTel}">📞 ${d.aeroTel}</a>` : '') +
+      `</div>`
+    : '') +
+
     // Descripción
-    `<div class="desc-block"><div class="sec-title"><span class="sec-title-icon">ℹ</span>Acerca de las ${tipoLabel}</div><p class="desc-txt">${desc}</p></div>` +
+    `<div class="desc-block"><div class="sec-title"><span class="sec-title-icon">ℹ</span>Acerca de las ${tipoLabel}</div>`<p class="desc-txt">${desc}</p></div>` +
     `<div class="nav-footer">` +
       `<button class="nav-foot-btn prev-foot-btn" onclick="goPrevItem()">` +
         `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>` +

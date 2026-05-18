@@ -341,6 +341,47 @@ body {
 .prec-txt  { color: #7A3A00; }
 
 /* ── DESCRIPCIÓN ─────────────────────────────────────────── */
+/* ── AEROPUERTO MÁS CERCANO ──────────────────────────────── */
+.aero-block {
+  border-top: 1px solid var(--border);
+  padding: 14px 18px 4px;
+}
+.aero-ciudad {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 2px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.aero-nombre {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-md);
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+.aero-tel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1A5276;
+  background: rgba(26,82,118,0.08);
+  border: 1.5px solid rgba(26,82,118,0.3);
+  border-radius: 6px;
+  padding: 5px 12px;
+  margin-bottom: 12px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.aero-tel:hover { background: rgba(26,82,118,0.15); }
+
+
 .desc-block { padding: 12px 18px; border-bottom: 1px solid var(--border); }
 .desc-txt { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 400; line-height: 1.75; color: var(--ink-md); }
 .detail-footer { height: 20px; }
