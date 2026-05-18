@@ -652,7 +652,7 @@ function renderDetail(d) {
     : '') +
 
     // Descripción
-    `<div class="desc-block"><div class="sec-title"><span class="sec-title-icon">ℹ</span>Acerca de las ${tipoLabel}</div>`<p class="desc-txt">${desc}</p></div>` +
+    `<div class="desc-block"><div class="sec-title"><span class="sec-title-icon">ℹ</span>Acerca de las ${tipoLabel}</div><p class="desc-txt">${desc}</p></div>` +
     `<div class="nav-footer">` +
       `<button class="nav-foot-btn prev-foot-btn" onclick="goPrevItem()">` +
         `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>` +
