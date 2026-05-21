@@ -302,7 +302,7 @@ function renderList() {
   const favs = getFavs(), dones = getDones();
   filtered.forEach(d => {
     const el = document.createElement("div");
-    el.className = "route-item";
+    el.className = "route-item"; el.dataset.nombre = d.nombre; el.dataset.tipo = d.tipo;
     const k = itemKey(d);
     const isFav=!!favs[k], isDone=!!dones[k];
 
@@ -1063,3 +1063,115 @@ window.addEventListener("popstate", (e) => {
   });
 
 })();
+
+/* ── MAPA IGN (Leaflet) ──────────────────────────────────── */
+let mapaIgnInstance = null;
+let mapaIgnVisible  = false;
+
+const TIPO_MARKER_COLOR = {
+  'ABRA':          '#7A5A18',
+  'CUESTA':        '#5A3A18',
+  'QUEBRADA':      '#3A5A18',
+  'RUTA ESCÉNICA': '#1A3A5A',
+};
+
+function toggleMapaView() {
+  const btn   = document.getElementById('btnMapaView');
+  const panel = document.getElementById('mapaIgnPanel');
+  mapaIgnVisible = !mapaIgnVisible;
+
+  if (mapaIgnVisible) {
+    panel.style.display = 'block';
+    btn.classList.add('active');
+    // Posicionar el panel debajo del toolbar
+    const toolbar = document.querySelector('.toolbar');
+    const header  = document.querySelector('.header');
+    const topOff  = header.offsetHeight + toolbar.offsetHeight;
+    panel.style.top = topOff + 'px';
+    initMapaIgn();
+  } else {
+    panel.style.display = 'none';
+    btn.classList.remove('active');
+  }
+}
+
+function initMapaIgn() {
+  if (mapaIgnInstance) {
+    // Ya inicializado — solo invalidar tamaño
+    mapaIgnInstance.invalidateSize();
+    return;
+  }
+
+  // Centrar en Argentina
+  mapaIgnInstance = L.map('mapaIgn', {
+    center: [-38, -63],
+    zoom: 4,
+    zoomControl: true,
+  });
+
+  // Capa base IGN color
+  L.tileLayer(
+    'https://wms.ign.gob.ar/geoserver/gwc/service/tms/1.0.0/capabaseargenmap@EPSG%3A3857@png/{z}/{x}/{-y}.png',
+    {
+      attribution: '<a href="https://www.ign.gob.ar" target="_blank">IGN Argentina</a> + <a href="https://www.openstreetmap.org/copyright" target="_blank">OSM</a>',
+      minZoom: 3,
+      maxZoom: 18,
+    }
+  ).addTo(mapaIgnInstance);
+
+  // Agregar marcadores de todas las rutas con coords
+  DATA.forEach(d => {
+    if (!d.wazeSrc) return;
+    const m = d.wazeSrc.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (!m) return;
+    const lat = parseFloat(m[1]);
+    const lng = parseFloat(m[2]);
+    const color = TIPO_MARKER_COLOR[d.tipo] || '#7A3A18';
+
+    // Marcador círculo SVG con color por tipo
+    const icon = L.divIcon({
+      className: '',
+      html: `<div class="ign-marker-icon" style="background:${color};"></div>`,
+      iconSize:   [20, 20],
+      iconAnchor: [10, 10],
+      popupAnchor:[0, -12],
+    });
+
+    const marker = L.marker([lat, lng], { icon }).addTo(mapaIgnInstance);
+
+    // Popup con info y botón para ir al detalle
+    const popupHtml = `
+      <div class="ign-popup-tipo" style="color:${color}">${d.tipo}</div>
+      <div class="ign-popup-nombre">${d.nombre}</div>
+      <div class="ign-popup-prov">${d.prov}${d.alt ? ' · ' + d.alt + ' msnm' : ''}</div>
+      <button class="ign-popup-btn" onclick="seleccionarDesdeMapaIgn('${d.nombre.replace(/'/g,"\\'")}','${d.tipo}')">
+        Ver detalle →
+      </button>`;
+
+    marker.bindPopup(popupHtml, { maxWidth: 200, minWidth: 160 });
+  });
+
+  // Si ya hay una ruta seleccionada, centrar en ella
+  if (currentDetail && currentDetail.wazeSrc) {
+    const m = currentDetail.wazeSrc.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (m) {
+      mapaIgnInstance.setView([parseFloat(m[1]), parseFloat(m[2])], 9);
+    }
+  }
+}
+
+function seleccionarDesdeMapaIgn(nombre, tipo) {
+  // Cerrar el mapa y abrir el detalle de la ruta
+  toggleMapaView();
+  const d = DATA.find(x => x.nombre === nombre && x.tipo === tipo);
+  if (!d) return;
+  // Simular click en la ruta del sidebar
+  const items = document.querySelectorAll('.route-item');
+  items.forEach(el => {
+    if (el.dataset.nombre === nombre && el.dataset.tipo === tipo) {
+      el.click();
+      el.scrollIntoView({ block: 'center' });
+    }
+  });
+}
+
