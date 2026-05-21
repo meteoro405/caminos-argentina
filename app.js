@@ -279,9 +279,13 @@ function filterSpecial(f, btn) {
     document.querySelectorAll(".filter-special").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
   }
+  // Volver siempre al listado al cambiar filtro
+  searchInput.value = ""; searchQuery = "";
+  searchClear.classList.remove("visible");
   document.querySelector(".sidebar").style.display = "";
   document.querySelector(".main").classList.remove("has-selection");
   activeItemEl = null;
+  currentDetail = null;
   document.getElementById("detail").innerHTML = emptyState();
   renderList();
 }
@@ -312,10 +316,16 @@ function showRandom() {
     if (activeItemEl) activeItemEl.classList.remove("active");
     found.classList.add("active");
     activeItemEl = found;
-    found.scrollIntoView({ behavior:"smooth", block:"start" });
+    found.scrollIntoView({ behavior: "smooth", block: "nearest" });
     document.getElementById("detail").scrollTop = 0;
   }
+  // En mobile, mostrar el detail directamente igual que al hacer click en un item
+  document.querySelector(".main").classList.add("has-selection");
+  if (window.innerWidth <= 680) {
+    document.querySelector(".sidebar").style.display = "none";
+  }
   renderDetail(d);
+  history.pushState({ itemIndex: DATA.indexOf(d) }, "");
 }
 
 /* ── HIGHLIGHT ───────────────────────────────────────────── */
@@ -808,21 +818,24 @@ history.replaceState({ base: true }, "");
 
 /* ── BACK BUTTON ────────────────────────────────────────── */
 window.addEventListener("popstate", (e) => {
+  // 1. Primero: cerrar el mapa IGN si está abierto
+  if (mapaIgnVisible) {
+    toggleMapaView(true);
+    return;
+  }
+  // 2. Después: si hay ruta seleccionada, volver al listado
   if (activeItemEl) {
-    // Detener TTS si estaba leyendo
     if (isSpeaking) { window.speechSynthesis.cancel(); isSpeaking = false; }
-    // Restaurar sidebar en mobile
     document.querySelector(".sidebar").style.display = "";
-    // Volver al listado
     activeItemEl.classList.remove("active");
     activeItemEl = null;
     currentDetail = null;
     document.querySelector(".main").classList.remove("has-selection");
     document.getElementById("detail").innerHTML = emptyState();
-    // Dejar el estado base listo para el próximo "atrás"
     history.replaceState({ base: true }, "");
+    return;
   }
-  // Si no hay ítem seleccionado, el navegador sale de la app de forma nativa
+  // 3. Si no hay nada abierto, el navegador sale de la app (comportamiento nativo)
 });
 
 /* ══════════════════════════════════════════════════════════
@@ -1089,7 +1102,7 @@ const TIPO_MARKER_COLOR = {
   'RUTA ESCÉNICA': '#1A3A5A',
 };
 
-function toggleMapaView() {
+function toggleMapaView(fromPopstate) {
   const btn   = document.getElementById('btnMapaView');
   const panel = document.getElementById('mapaIgnPanel');
   mapaIgnVisible = !mapaIgnVisible;
@@ -1097,12 +1110,13 @@ function toggleMapaView() {
   if (mapaIgnVisible) {
     panel.style.display = 'block';
     btn.classList.add('active');
-    // Posicionar el panel debajo del toolbar
     const toolbar = document.querySelector('.toolbar');
     const header  = document.querySelector('.header');
     const topOff  = header.offsetHeight + toolbar.offsetHeight;
     panel.style.top = topOff + 'px';
     initMapaIgn();
+    // Empujar estado al historial para que el Atrás lo cierre
+    if (!fromPopstate) history.pushState({ mapaIgn: true }, '');
   } else {
     panel.style.display = 'none';
     btn.classList.remove('active');
