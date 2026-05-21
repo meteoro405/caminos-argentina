@@ -328,6 +328,124 @@ function showRandom() {
   history.pushState({ itemIndex: DATA.indexOf(d) }, "");
 }
 
+/* ── INCENDIOS NASA FIRMS ────────────────────────────────── */
+async function loadFirms(d, lat, lng) {
+  const MAP_KEY  = '9f1c06fdf864e8e9686d2a372bc95313';
+  const today    = new Date().toISOString().slice(0,10);
+  const blockId  = 'firms_' + d.nombre.replace(/[^a-z0-9]/gi,'_');
+  const cacheKey = 'firms_' + lat.toFixed(2) + '_' + lng.toFixed(2) + '_' + today;
+
+  let focos = null;
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) focos = JSON.parse(cached);
+  } catch(e) {}
+
+  if (focos === null) {
+    try {
+      // Bounding box de ~100km alrededor del punto (1° lat ≈ 111km)
+      const delta = 0.9;
+      const bbox  = `${(lng-delta).toFixed(4)},${(lat-delta).toFixed(4)},${(lng+delta).toFixed(4)},${(lat+delta).toFixed(4)}`;
+      const url   = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${MAP_KEY}/VIIRS_SNPP_NRT/${bbox}/3`;
+      const res   = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text  = await res.text();
+
+      // Parsear CSV — primera línea es encabezado
+      const lines = text.trim().split('\n');
+      if (lines.length <= 1) {
+        focos = [];
+      } else {
+        const headers = lines[0].split(',');
+        const latIdx  = headers.indexOf('latitude');
+        const lngIdx  = headers.indexOf('longitude');
+        const confIdx = headers.indexOf('confidence');
+        const dateIdx = headers.indexOf('acq_date');
+        const timeIdx = headers.indexOf('acq_time');
+        const frpIdx  = headers.indexOf('frp');
+
+        focos = lines.slice(1).filter(l => l.trim()).map(line => {
+          const cols = line.split(',');
+          return {
+            lat:  parseFloat(cols[latIdx]),
+            lng:  parseFloat(cols[lngIdx]),
+            conf: cols[confIdx] || 'n',
+            date: cols[dateIdx] || '',
+            time: cols[timeIdx] || '',
+            frp:  parseFloat(cols[frpIdx]) || 0,
+          };
+        });
+      }
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(focos)); } catch(e) {}
+    } catch(e) {
+      const el = document.getElementById(blockId);
+      if (el) el.style.display = 'none';
+      return;
+    }
+  }
+
+  const el = document.getElementById(blockId);
+  if (!el) return;
+
+  if (focos.length === 0) {
+    // Sin focos — bloque verde tranquilizador
+    el.innerHTML =
+      '<div class="sec-title firms-title">🔥 Actividad ígnea cercana</div>' +
+      '<div class="firms-ok">' +
+        '<span class="firms-ok-icon">✅</span>' +
+        '<span class="firms-ok-txt">Sin focos detectados en los últimos 3 días en un radio de ~100 km</span>' +
+      '</div>' +
+      '<p class="firms-credit">Datos: <a href="https://firms.nasa.gov" target="_blank" rel="noopener">NASA FIRMS</a> · Satélite VIIRS · Puede incluir quemas agrícolas</p>';
+    return;
+  }
+
+  // Hay focos — clasificar por confianza y calcular más reciente
+  const altaConf  = focos.filter(f => f.conf === 'h' || f.conf === 'high');
+  const mediaConf = focos.filter(f => f.conf === 'n' || f.conf === 'nominal');
+
+  // Determinar el más reciente
+  const sorted = [...focos].sort((a,b) => {
+    const da = a.date + a.time.padStart(4,'0');
+    const db = b.date + b.time.padStart(4,'0');
+    return db.localeCompare(da);
+  });
+  const ultimo = sorted[0];
+
+  // Formatear hora del último
+  function fmtAcq(f) {
+    if (!f.date) return '';
+    const t = f.time.padStart(4,'0');
+    const h = t.slice(0,2), m = t.slice(2,4);
+    const parts = f.date.split('-');
+    return `${parts[2]}/${parts[1]} ${h}:${m} UTC`;
+  }
+
+  // Nivel de alerta
+  let nivel, color, emoji;
+  if (altaConf.length >= 3 || (altaConf.length >= 1 && ultimo.frp > 50)) {
+    nivel = 'ALERTA'; color = 'red'; emoji = '🔴';
+  } else if (altaConf.length >= 1 || focos.length >= 5) {
+    nivel = 'PRECAUCIÓN'; color = 'orange'; emoji = '🟠';
+  } else {
+    nivel = 'BAJA ACTIVIDAD'; color = 'yellow'; emoji = '🟡';
+  }
+
+  el.innerHTML =
+    '<div class="sec-title firms-title">🔥 Actividad ígnea cercana</div>' +
+    `<div class="firms-alert firms-${color}">` +
+      `<div class="firms-nivel">${emoji} ${nivel}</div>` +
+      `<div class="firms-stats">` +
+        `<span><strong>${focos.length}</strong> foco${focos.length>1?'s':''} detectado${focos.length>1?'s':''}</span>` +
+        (altaConf.length ? `<span><strong>${altaConf.length}</strong> conf. alta</span>` : '') +
+        `<span>Último: ${fmtAcq(ultimo)}</span>` +
+      `</div>` +
+      `<a class="firms-link" href="https://firms.nasa.gov/map/#d:24hrs;@${lng},${lat},9z" target="_blank" rel="noopener">` +
+        `Ver en mapa NASA →` +
+      `</a>` +
+    `</div>` +
+    '<p class="firms-credit">Datos: <a href="https://firms.nasa.gov" target="_blank" rel="noopener">NASA FIRMS</a> · Satélite VIIRS · Radio ~100 km · Puede incluir quemas agrícolas</p>';
+}
+
 /* ── HIGHLIGHT ───────────────────────────────────────────── */
 function highlight(text, query) {
   if (!query || !text) return text||"";
@@ -698,6 +816,11 @@ function renderDetail(d) {
       `<div class="sol-loading">☀️ Cargando horarios del sol…</div>` +
     `</div>` : '') +
 
+    // Incendios NASA FIRMS — carga asíncrona
+    (d.wazeSrc ? `<div class="firms-block" id="firms_${d.nombre.replace(/[^a-z0-9]/gi,'_')}">` +
+      `<div class="firms-loading">🔥 Verificando actividad ígnea…</div>` +
+    `</div>` : '') +
+
     // Paso Fronterizo (después del clima, antes de Acerca de)
     (d.pasoPf || d.horarioPf ?
       `<div class="pf-block">` +
@@ -765,10 +888,15 @@ function renderDetail(d) {
     }, 150);
   }
 
-  // Cargar amanecer/atardecer si hay coords
+  // Cargar amanecer/atardecer e incendios si hay coords
   if (d.wazeSrc) {
     const mc = d.wazeSrc.match(/ll=(-?[\d.]+),(-?[\d.]+)/);
-    if (mc) loadSol(d, parseFloat(mc[1]), parseFloat(mc[2]));
+    if (mc) {
+      const lat = parseFloat(mc[1]);
+      const lng = parseFloat(mc[2]);
+      loadSol(d, lat, lng);
+      loadFirms(d, lat, lng);
+    }
   }
 }
 

@@ -493,6 +493,59 @@ body {
 .sol-credit a { color: var(--bronze); text-decoration: none; }
 .sol-credit a:hover { text-decoration: underline; }
 
+/* ── NASA FIRMS — INCENDIOS ──────────────────────────────── */
+.firms-block {
+  border-top: 1px solid var(--border);
+  padding: 12px 18px 4px;
+}
+.firms-loading {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; color: var(--ink-lt); padding: 6px 0;
+}
+.firms-title { margin-bottom: 8px; }
+.firms-ok {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(30,120,30,0.08);
+  border: 1px solid rgba(30,120,30,0.25);
+  border-radius: 8px; padding: 10px 14px; margin-bottom: 8px;
+}
+.firms-ok-icon { font-size: 20px; }
+.firms-ok-txt {
+  font-family: 'Inter', sans-serif; font-size: 13px;
+  color: #1A5A1A; font-weight: 500; line-height: 1.4;
+}
+.firms-alert {
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 8px;
+}
+.firms-red    { background: rgba(180,30,30,0.08); border: 1px solid rgba(180,30,30,0.35); }
+.firms-orange { background: rgba(200,100,20,0.08); border: 1px solid rgba(200,100,20,0.35); }
+.firms-yellow { background: rgba(180,150,20,0.08); border: 1px solid rgba(180,150,20,0.35); }
+.firms-nivel {
+  font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700;
+  margin-bottom: 6px; color: var(--ink);
+}
+.firms-stats {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  font-family: 'Inter', sans-serif; font-size: 13px;
+  color: var(--ink-md); margin-bottom: 10px;
+}
+.firms-stats strong { color: var(--ink); }
+.firms-link {
+  display: inline-flex; align-items: center;
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+  color: #1A3A5A; text-decoration: none;
+  background: rgba(26,58,90,0.08); border: 1px solid rgba(26,58,90,0.25);
+  border-radius: 5px; padding: 4px 10px;
+  transition: background 0.15s;
+}
+.firms-link:hover { background: rgba(26,58,90,0.15); }
+.firms-credit {
+  font-family: 'Inter', sans-serif; font-size: 11px;
+  color: var(--ink-lt); margin: 0 0 8px; text-align: right;
+}
+.firms-credit a { color: var(--bronze); text-decoration: none; }
+.firms-credit a:hover { text-decoration: underline; }
+
 /* ── RESPONSIVE ─────────────────────────────────────────── */
 @media (max-width: 680px) {
   html, body { overflow: hidden; }
@@ -622,6 +675,12 @@ body {
   max-width: 90vw;
   object-fit: contain;
   border-radius: 50%;
+}
+.master-icon {
+  width: 160px;
+  height: 160px;
+  max-width: 60vw;
+  object-fit: contain;
 }
 .pn-desc {
   font-family: 'Inter', sans-serif;
