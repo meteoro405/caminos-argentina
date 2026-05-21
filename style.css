@@ -380,10 +380,20 @@ body {
 }
 .aero-tel:hover { background: rgba(26,82,118,0.15); }
 .aero-btns-row {
-  display: flex; gap: 7px; flex-wrap: wrap;
+  display: flex; gap: 7px; flex-wrap: nowrap;
   align-items: center; margin-bottom: 12px;
 }
-.aero-map-btn { flex: 0 1 auto; }
+.aero-map-btn {
+  flex: 0 0 auto;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  color: #1A5276; background: rgba(42,90,122,0.10);
+  border: 1px solid rgba(42,90,122,0.25); border-radius: 6px;
+  padding: 5px 12px; cursor: pointer; text-decoration: none;
+  transition: background 0.15s; box-sizing: border-box;
+  white-space: nowrap;
+}
+.aero-map-btn:hover { background: rgba(42,90,122,0.18); }
 
 
 .desc-block { padding: 12px 18px; border-bottom: 1px solid var(--border); }
