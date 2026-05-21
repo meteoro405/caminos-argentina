@@ -1123,10 +1123,29 @@ function toggleMapaView(fromPopstate) {
   }
 }
 
+function centrarMapaEnRutaActual() {
+  if (!mapaIgnInstance || !currentDetail || !currentDetail.wazeSrc) return;
+  const m = currentDetail.wazeSrc.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (m) {
+    mapaIgnInstance.setView([parseFloat(m[1]), parseFloat(m[2])], 9);
+    // Abrir el popup del marcador correspondiente
+    mapaIgnInstance.eachLayer(layer => {
+      if (layer instanceof L.Marker) {
+        const ll = layer.getLatLng();
+        if (Math.abs(ll.lat - parseFloat(m[1])) < 0.001 &&
+            Math.abs(ll.lng - parseFloat(m[2])) < 0.001) {
+          layer.openPopup();
+        }
+      }
+    });
+  }
+}
+
 function initMapaIgn() {
   if (mapaIgnInstance) {
-    // Ya inicializado — solo invalidar tamaño
+    // Ya inicializado — invalidar tamaño y centrar en ruta activa si hay una
     mapaIgnInstance.invalidateSize();
+    centrarMapaEnRutaActual();
     return;
   }
 
@@ -1179,13 +1198,8 @@ function initMapaIgn() {
     marker.bindPopup(popupHtml, { maxWidth: 200, minWidth: 160 });
   });
 
-  // Si ya hay una ruta seleccionada, centrar en ella
-  if (currentDetail && currentDetail.wazeSrc) {
-    const m = currentDetail.wazeSrc.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
-    if (m) {
-      mapaIgnInstance.setView([parseFloat(m[1]), parseFloat(m[2])], 9);
-    }
-  }
+  // Si ya hay una ruta seleccionada, centrar y abrir su popup
+  centrarMapaEnRutaActual();
 }
 
 function seleccionarDesdeMapaIgn(nombre, tipo) {
