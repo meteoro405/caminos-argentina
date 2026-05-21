@@ -428,7 +428,7 @@ function renderDetail(d) {
     // Observaciones — TTS button junto al título
     (d.obs ? `<div class="obs-block obs-above-map">` +
       `<div class="obs-title-row">` +
-        `<div class="sec-title">Observaciones</div>` +
+        `<div class="sec-title"><span class="sec-title-icon">📝</span>Observaciones</div>` +
         `<button class="tts-btn" onclick="speakObs('${obsEscJs}',this)" title="Escuchar">` +
           `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">` +
             `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>` +
@@ -442,7 +442,7 @@ function renderDetail(d) {
       `</div>` : "") +
 
     // Mapa
-    `<div class="map-section"><div class="sec-title">Mapa</div>` +
+    `<div class="map-section"><div class="sec-title"><span class="sec-title-icon">🗺</span>Mapa</div>` +
       `<div class="map-btns-row">` +
         (d.mapNoDisp
           ? `<div class="gmaps-btn gmaps-nodisp">📍 Ruta no disponible en Google Maps</div>`
@@ -474,7 +474,7 @@ function renderDetail(d) {
     (d.iconoMaster ? `<div class="pn-block master-block"><img src="iconos/${d.iconoMaster}" class="pn-icon" alt="Ruta principal"></div>` : '') +
 
     // Mejor época
-    (d.epoca ? `<div class="info-block epoca-block"><div class="sec-title">Mejor época</div><p class="info-txt epoca-txt">🗓 ${d.epoca}</p></div>` : "") +
+    (d.epoca ? `<div class="info-block epoca-block"><div class="sec-title"><span class="sec-title-icon">🗓</span>Mejor época</div><p class="info-txt epoca-txt">${d.epoca}</p></div>` : "") +
 
     // Precauciones
     (d.prec ? `<div class="info-block prec-block"><div class="sec-title">Precauciones</div><p class="info-txt prec-txt">⚠ ${d.prec}</p></div>` : "") +
@@ -656,7 +656,7 @@ function renderDetail(d) {
       `</div>`
     : '') +
 
-    `<div class="desc-block"><div class="sec-title">Acerca de las ${tipoLabel}</div><p class="desc-txt">${desc}</p></div>` +
+    `<div class="desc-block"><div class="sec-title"><span class="sec-title-icon">ℹ</span>Acerca de las ${tipoLabel}</div><p class="desc-txt">${desc}</p></div>` +
     `<div class="nav-footer">` +
       `<button class="nav-foot-btn prev-foot-btn" onclick="goPrevItem()">` +
         `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>` +
