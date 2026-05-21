@@ -275,6 +275,15 @@ body {
   color: #0a4a6e; background: rgba(51,204,255,0.12); border: 1px solid rgba(51,204,255,0.35);
 }
 .waze-btn:hover { background: rgba(51,204,255,0.22); }
+.estacion-btn {
+  flex: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  border-radius: 4px; padding: 7px 13px; text-decoration: none;
+  transition: background 0.15s; box-sizing: border-box;
+  color: #1A4A1A; background: rgba(40,140,40,0.10); border: 1px solid rgba(40,140,40,0.30);
+}
+.estacion-btn:hover { background: rgba(40,140,40,0.18); }
 .gmaps-nodisp { cursor: default; color: var(--ink-lt); background: rgba(90,58,26,0.07); border-color: rgba(90,58,26,0.18); font-style: italic; font-size: 12px; }
 
 .map-container {
@@ -310,13 +319,13 @@ body {
   padding: 14px 18px 4px;
 }
 .aero-ciudad {
-  font-family: 'Playfair Display', serif;
-  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
   font-weight: 700;
   color: var(--ink);
   margin: 0 0 2px 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  line-height: 1.6;
+  white-space: pre-line;
 }
 .aero-nombre {
   font-family: 'Inter', sans-serif;
@@ -539,7 +548,7 @@ body {
   font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 700;
-  color: var(--bronze);
+  color: var(--ink);
   text-align: center;
   margin: 6px 18px 10px;
   letter-spacing: 1.5px;

@@ -508,7 +508,15 @@ function renderDetail(d) {
               ? `<a class="waze-btn" href="${d.wazeSrc}" target="_blank" rel="noopener">` +
                   `<svg width="15" height="15" viewBox="0 0 48 48" fill="none"><ellipse cx="24" cy="26" rx="18" ry="16" fill="#33CCFF"/><circle cx="17" cy="30" r="3" fill="#fff"/><circle cx="31" cy="30" r="3" fill="#fff"/><path d="M17 22 Q24 16 31 22" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="33" cy="12" r="5" fill="#FF6B00"/></svg>` +
                   `Abrir en Waze</a>`
-              : '')
+              : '') +
+            (() => {
+              if (!d.wazeSrc) return '';
+              const mc = d.wazeSrc.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+              if (!mc) return '';
+              const lat = mc[1], lng = mc[2];
+              const url = `https://www.google.com/maps/search/estaci%C3%B3n+de+servicio/@${lat},${lng},13z`;
+              return `<a class="estacion-btn" href="${url}" target="_blank" rel="noopener">⛽ Estaciones</a>`;
+            })()
         ) +
       `</div>` +
       (!d.mapImgHidden ? mapImg('', `Mapa de ${d.nombre}`, d.mapImg||null) : "") +
