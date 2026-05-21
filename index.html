@@ -15,6 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -80,6 +81,10 @@
           <button class="pill filter-special done-pill" onclick="filterSpecial('VISITADOS',this)">✓ Visitados</button>
           <button class="pill random-pill" onclick="showRandom()">🎲 Al azar</button>
         </div>
+        <div class="toolbar-sep"></div>
+        <div class="tab-section">
+          <button class="pill map-view-pill" id="btnMapaView" onclick="toggleMapaView()">🗺 Mapa</button>
+        </div>
       </div>
     </div>
 
@@ -109,6 +114,11 @@
     </div>
   </div>
 
+  <!-- Panel Mapa IGN -->
+  <div class="mapa-ign-panel" id="mapaIgnPanel" style="display:none;">
+    <div id="mapaIgn" style="width:100%;height:100%;"></div>
+  </div>
+
   <div class="maps-modal" id="mapsModal" onclick="closeMaps(event)">
     <div class="maps-modal-inner">
       <div class="maps-modal-header">
@@ -127,6 +137,7 @@
     <div id="lb-hint">Pellizco para zoom · Arrastrá para mover · Doble tap para zoom</div>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
   <script>
