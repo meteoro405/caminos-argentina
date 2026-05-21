@@ -77,51 +77,51 @@ body {
   background: #3A1A06;
   border-bottom: 1px solid rgba(160,85,42,0.4);
   position: sticky; top: 68px; z-index: 90;
-  overflow: hidden;
+  padding: 6px 12px 8px;
 }
-/* Carrusel: una sola fila scrolleable con scroll suave y snap */
-.toolbar-track {
+.toolbar-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  white-space: nowrap;
-  /* Scroll snap para que cada pill "encaje" */
-  scroll-snap-type: x proximity;
+  flex-wrap: wrap;
 }
-.toolbar-track::-webkit-scrollbar { display: none; }
-/* Separador entre grupos de pills */
-.toolbar-sep {
-  width: 1px;
-  height: 20px;
-  background: rgba(160,85,42,0.35);
-  flex-shrink: 0;
+.toolbar-row-1 {
+  margin-bottom: 5px;
+  justify-content: space-between;
 }
-/* Difuminado en los bordes para indicar que hay más contenido */
-.toolbar::before,
-.toolbar::after {
-  content: '';
+.toolbar-tipos {
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+}
+/* Desplegable Otras */
+.otras-wrap { position: relative; }
+.otras-menu {
+  display: none;
   position: absolute;
-  top: 0; bottom: 0;
-  width: 28px;
-  pointer-events: none;
-  z-index: 1;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #2A1005;
+  border: 1.5px solid rgba(200,132,90,0.4);
+  border-radius: 10px;
+  padding: 5px;
+  z-index: 200;
+  min-width: 140px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.45);
 }
-.toolbar::before { left: 0; background: linear-gradient(to right, #3A1A06 60%, transparent); }
-.toolbar::after  { right: 0; background: linear-gradient(to left,  #3A1A06 60%, transparent); width: 40px; }
-/* Flecha derecha visible para indicar scroll */
-.toolbar::after { content: '›'; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; color: rgba(232,216,176,0.7); font-size: 22px; line-height: 1; }
-/* Quitar ::before cuando scrollX=0 (manejado con JS) */
-.toolbar.at-start::before { display: none; }
-.toolbar.at-end::after    { display: none; }
-
-/* Las tab-section ahora son solo grupos lógicos inline */
-.tab-section { display: contents; }
-.tab-section--special { display: contents; }
+.otras-menu.open { display: flex; flex-direction: column; gap: 2px; }
+.otras-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 7px;
+  background: transparent; border: none;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  color: rgba(232,216,176,0.75); cursor: pointer; text-align: left;
+  transition: background 0.12s;
+}
+.otras-item:hover { background: rgba(200,132,90,0.15); color: rgba(232,216,176,1); }
+.otras-item.active { background: rgba(200,132,90,0.2); color: rgba(232,216,176,1); }
+.otras-dot {
+  width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  border: 1.5px solid rgba(255,255,255,0.25);
+}
 
 .pill {
   font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600;

@@ -64,27 +64,26 @@
     </header>
 
     <div class="toolbar" id="toolbarWrap">
-      <div class="toolbar-track" id="toolbarTrack">
-        <!-- Grupo tipo -->
-        <div class="tab-section" id="tipoSection">
-          <button class="pill" id="tipo-TODOS" onclick="filterTipo('TODOS',this)">Todos</button>
-          <button class="pill" onclick="filterTipo('ABRA',this)">Abras</button>
-          <button class="pill" onclick="filterTipo('CUESTA',this)">Cuestas</button>
-          <button class="pill" onclick="filterTipo('QUEBRADA',this)">Quebradas</button>
-          <button class="pill" onclick="filterTipo('RUTA ESCÉNICA',this)">Rutas Escénicas</button>
+      <!-- Fila 1: tipos + mapa -->
+      <div class="toolbar-row toolbar-row-1">
+        <div class="toolbar-tipos" id="tipoSection">
+          <button class="pill" id="tipo-RUTA" onclick="filterTipo('RUTA ESCÉNICA',this)">Rutas Escénicas</button>
+          <div class="otras-wrap" id="otrasWrap">
+            <button class="pill otras-pill" id="otrasBtn" onclick="toggleOtras(event)">Otras ▾</button>
+            <div class="otras-menu" id="otrasMenu">
+              <button class="otras-item" onclick="selectOtras('ABRA',this)"><span class="otras-dot" style="background:#7A5A18"></span>Abras</button>
+              <button class="otras-item" onclick="selectOtras('CUESTA',this)"><span class="otras-dot" style="background:#5A3A18"></span>Cuestas</button>
+              <button class="otras-item" onclick="selectOtras('QUEBRADA',this)"><span class="otras-dot" style="background:#3A5A18"></span>Quebradas</button>
+            </div>
+          </div>
         </div>
-        <div class="toolbar-sep"></div>
-        <!-- Grupo especial -->
-        <div class="tab-section tab-section--special">
-          <button class="pill filter-special active" onclick="filterSpecial('TODOS',this)">Todos</button>
-          <button class="pill filter-special fav-pill" onclick="filterSpecial('FAVORITOS',this)">♥ Favs</button>
-          <button class="pill filter-special done-pill" onclick="filterSpecial('VISITADOS',this)">✓ Visitados</button>
-          <button class="pill random-pill" onclick="showRandom()">🎲 Al azar</button>
-        </div>
-        <div class="toolbar-sep"></div>
-        <div class="tab-section">
-          <button class="pill map-view-pill" id="btnMapaView" onclick="toggleMapaView()">🗺 Mapa</button>
-        </div>
+        <button class="pill map-view-pill" id="btnMapaView" onclick="toggleMapaView()">🗺 Mapa</button>
+      </div>
+      <!-- Fila 2: filtros especiales -->
+      <div class="toolbar-row toolbar-row-2">
+        <button class="pill filter-special fav-pill" onclick="filterSpecial('FAVORITOS',this)">♥ Favs</button>
+        <button class="pill filter-special done-pill" onclick="filterSpecial('VISITADOS',this)">✓ Visitados</button>
+        <button class="pill random-pill" onclick="showRandom()">🎲 Al azar</button>
       </div>
     </div>
 

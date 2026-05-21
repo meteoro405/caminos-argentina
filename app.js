@@ -225,8 +225,12 @@ function filterTipo(t, btn) {
   activeTipo = t; activeItemEl = null;
   searchInput.value = ""; searchQuery = "";
   searchClear.classList.remove("visible");
+  // Limpiar activos en fila 1 y resetear botón Otras
   document.querySelectorAll("#tipoSection .pill").forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
+  document.querySelectorAll(".otras-item").forEach(b=>b.classList.remove("active"));
+  const otrasBtn = document.getElementById("otrasBtn");
+  if (otrasBtn) { otrasBtn.textContent = "Otras ▾"; otrasBtn.classList.remove("active"); }
+  if (btn) btn.classList.add("active");
   // Restaurar sidebar en mobile si estaba oculta
   document.querySelector(".sidebar").style.display = "";
   document.querySelector(".main").classList.remove("has-selection");
@@ -234,11 +238,47 @@ function filterTipo(t, btn) {
   renderList();
 }
 
-function filterSpecial(f, btn) {
-  activeFilter = f;
-  document.querySelectorAll(".filter-special").forEach(b=>b.classList.remove("active"));
+function toggleOtras(e) {
+  e.stopPropagation();
+  const menu = document.getElementById("otrasMenu");
+  menu.classList.toggle("open");
+  // Cerrar al hacer click fuera
+  if (menu.classList.contains("open")) {
+    setTimeout(() => {
+      document.addEventListener("click", closeOtras, { once: true });
+    }, 10);
+  }
+}
+
+function closeOtras() {
+  document.getElementById("otrasMenu").classList.remove("open");
+}
+
+function selectOtras(tipo, itemEl) {
+  // Marcar el item del menú
+  document.querySelectorAll(".otras-item").forEach(b=>b.classList.remove("active"));
+  itemEl.classList.add("active");
+  // Marcar el botón Otras como activo y mostrar qué tipo está seleccionado
+  const btn = document.getElementById("otrasBtn");
+  const labels = {ABRA:"Abras",CUESTA:"Cuestas",QUEBRADA:"Quebradas"};
+  btn.textContent = (labels[tipo]||"Otras") + " ▾";
   btn.classList.add("active");
-  // Restaurar sidebar en mobile si estaba oculta
+  // Desactivar el pill de Rutas Escénicas
+  document.getElementById("tipo-RUTA").classList.remove("active");
+  closeOtras();
+  filterTipo(tipo, null);
+}
+
+function filterSpecial(f, btn) {
+  // Toggle: si ya está activo, volver a TODOS
+  if (activeFilter === f) {
+    activeFilter = "TODOS";
+    document.querySelectorAll(".filter-special").forEach(b=>b.classList.remove("active"));
+  } else {
+    activeFilter = f;
+    document.querySelectorAll(".filter-special").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+  }
   document.querySelector(".sidebar").style.display = "";
   document.querySelector(".main").classList.remove("has-selection");
   activeItemEl = null;
@@ -248,9 +288,14 @@ function filterSpecial(f, btn) {
 
 /* ── RANDOM ──────────────────────────────────────────────── */
 function showRandom() {
-  // Clear search so we pick from the full tipo list
   searchInput.value = ""; searchQuery = "";
   searchClear.classList.remove("visible");
+  // Resetear filtros de tipo para random de todo
+  activeTipo = "TODOS";
+  document.querySelectorAll("#tipoSection .pill").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".otras-item").forEach(b=>b.classList.remove("active"));
+  const otrasBtn = document.getElementById("otrasBtn");
+  if (otrasBtn) { otrasBtn.textContent = "Otras ▾"; otrasBtn.classList.remove("active"); }
 
   const filtered = getFiltered();
   if (!filtered.length) return;
@@ -709,39 +754,8 @@ function emptyState() {
 }
 
 /* ── INIT ────────────────────────────────────────────────── */
-document.querySelectorAll("#tipoSection .pill").forEach(b => {
-  b.classList.toggle("active", b.textContent==="Todos");
-});
+// Arrancar sin ningún tipo activo = mostrar todos
 renderList();
-
-/* ── CARRUSEL TOOLBAR ────────────────────────────────────── */
-(function() {
-  const track = document.getElementById('toolbarTrack');
-  const wrap  = document.getElementById('toolbarWrap');
-  if (!track || !wrap) return;
-
-  function updateFade() {
-    const atStart = track.scrollLeft <= 4;
-    const atEnd   = track.scrollLeft >= track.scrollWidth - track.clientWidth - 4;
-    wrap.classList.toggle('at-start', atStart);
-    wrap.classList.toggle('at-end',   atEnd);
-  }
-
-  track.addEventListener('scroll', updateFade, { passive: true });
-  updateFade();
-
-  // Al activar un pill, hacer scroll para centrarlo en el track
-  track.addEventListener('click', e => {
-    const pill = e.target.closest('.pill');
-    if (!pill) return;
-    setTimeout(() => {
-      const trackRect = track.getBoundingClientRect();
-      const pillRect  = pill.getBoundingClientRect();
-      const offset = pillRect.left - trackRect.left - (trackRect.width - pillRect.width) / 2;
-      track.scrollBy({ left: offset, behavior: 'smooth' });
-    }, 60);
-  });
-})();
 
 /* ── DEEP LINK: abrir ruta desde URL ─────────────────────── */
 (function() {
