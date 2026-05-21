@@ -546,11 +546,12 @@ function renderDetail(d) {
     (d.fiestas ? `<div class="info-block fiestas-block"><div class="sec-title">🎉 Fiestas y Eventos</div><p class="info-txt fiestas-txt">${d.fiestas}</p></div>` : '') +
 
     // Ícono Parque Nacional + descripción PN
-    (d.iconopn || d.pnDesc ?
+    (d.iconopn || d.pnDesc || d.pnNombre ?
       `<div class="pn-block">` +
         `<div class="sec-title pn-section-title">Parque Nacional Cercano a Esta Ruta</div>` +
-        (d.iconopn ? `<img src="iconos/${d.iconopn}" class="pn-icon" alt="Parque Nacional">` : '') +
-        (d.pnDesc  ? `<p class="pn-desc">${d.pnDesc}</p>` : '') +
+        (d.pnNombre ? `<p class="pn-nombre">${d.pnNombre.toUpperCase()}</p>` : '') +
+        (d.iconopn  ? `<img src="iconos/${d.iconopn}" class="pn-icon" alt="Parque Nacional">` : '') +
+        (d.pnDesc   ? `<p class="pn-desc">${d.pnDesc}</p>` : '') +
       `</div>`
     : '') +
 

@@ -339,7 +339,6 @@ body {
   border: 1.5px solid rgba(26,82,118,0.3);
   border-radius: 6px;
   padding: 5px 12px;
-  margin-bottom: 12px;
   text-decoration: none;
 }
 .aero-tel:hover { background: rgba(26,82,118,0.15); }
@@ -536,6 +535,16 @@ body {
 }
 
 /* ── Bloque Parque Nacional (ícono + descripción) ────────── */
+.pn-nombre {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bronze);
+  text-align: center;
+  margin: 6px 18px 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
 .pn-block {
   display: flex;
   flex-direction: column;
@@ -878,7 +887,7 @@ body {
   margin-bottom: 10px;
 }
 .weather-inner {
-  margin: 0 18px 14px;
+  margin: 0 18px 4px;
   border-radius: 6px;
   overflow: hidden;
   border: 1px solid var(--border);
@@ -887,7 +896,7 @@ body {
   display: block;
 }
 .weather-inner-extra {
-  margin-top: 6px;
+  margin-top: 3px;
 }
 
 /* ── PASO FRONTERIZO ─────────────────────────────────────── */
