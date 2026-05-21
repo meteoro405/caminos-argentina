@@ -559,7 +559,20 @@ function renderDetail(d) {
         `<div class="sec-title pn-section-title">Parque Nacional Cercano a Esta Ruta</div>` +
         (d.pnNombre ? `<p class="pn-nombre">${d.pnNombre.toUpperCase()}</p>` : '') +
         (d.iconopn  ? `<img src="iconos/${d.iconopn}" class="pn-icon" alt="Parque Nacional">` : '') +
-        (d.pnDesc   ? `<p class="pn-desc">${d.pnDesc}</p>` : '') +
+        (d.pnDesc   ?
+          `<div class="pn-desc-wrap">` +
+            `<button class="tts-btn pn-tts-btn" onclick="speakObs(this.dataset.text,this)" ` +
+              `data-text="${d.pnDesc.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">` +
+              `<svg class="tts-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">` +
+                `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>` +
+                `<path class="tts-wave1" d="M15.54 8.46a5 5 0 0 1 0 7.07"/>` +
+                `<path class="tts-wave2" d="M19.07 4.93a10 10 0 0 1 0 14.14"/>` +
+              `</svg>` +
+              `Escuchar` +
+            `</button>` +
+            `<p class="pn-desc">${d.pnDesc}</p>` +
+          `</div>`
+        : '') +
       `</div>`
     : '') +
 
