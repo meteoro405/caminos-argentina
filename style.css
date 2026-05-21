@@ -439,6 +439,60 @@ body {
   cursor: pointer;
 }
 
+/* ── AMANECER / ATARDECER ────────────────────────────────── */
+.sol-block {
+  border-top: 1px solid var(--border);
+  padding: 12px 18px 4px;
+}
+.sol-loading {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--ink-lt);
+  padding: 6px 0;
+}
+.sol-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.sol-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(160,85,42,0.06);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 8px;
+  gap: 3px;
+}
+.sol-icono { font-size: 20px; line-height: 1; }
+.sol-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--ink-lt);
+}
+.sol-hora {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.5px;
+}
+.sol-duracion { font-size: 15px; }
+.sol-credit {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: var(--ink-lt);
+  text-align: right;
+  margin: 0 0 8px;
+}
+.sol-credit a { color: var(--bronze); text-decoration: none; }
+.sol-credit a:hover { text-decoration: underline; }
+
 /* ── RESPONSIVE ─────────────────────────────────────────── */
 @media (max-width: 680px) {
   html, body { overflow: hidden; }

@@ -693,6 +693,11 @@ function renderDetail(d) {
       `</div>`
     : '') +
 
+    // Sol (amanecer/atardecer) — carga asíncrona
+    (d.wazeSrc ? `<div class="sol-block" id="sol_${d.nombre.replace(/[^a-z0-9]/gi,'_')}">` +
+      `<div class="sol-loading">☀️ Cargando horarios del sol…</div>` +
+    `</div>` : '') +
+
     // Paso Fronterizo (después del clima, antes de Acerca de)
     (d.pasoPf || d.horarioPf ?
       `<div class="pf-block">` +
@@ -759,6 +764,81 @@ function renderDetail(d) {
       }
     }, 150);
   }
+
+  // Cargar amanecer/atardecer si hay coords
+  if (d.wazeSrc) {
+    const mc = d.wazeSrc.match(/ll=(-?[\d.]+),(-?[\d.]+)/);
+    if (mc) loadSol(d, parseFloat(mc[1]), parseFloat(mc[2]));
+  }
+}
+
+/* ── AMANECER / ATARDECER (sunrise-sunset.org) ───────────── */
+async function loadSol(d, lat, lng) {
+  const today    = new Date().toISOString().slice(0,10);
+  const cacheKey = 'sol_' + lat.toFixed(3) + '_' + lng.toFixed(3) + '_' + today;
+  const blockId  = 'sol_' + d.nombre.replace(/[^a-z0-9]/gi,'_');
+
+  let data = null;
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) data = JSON.parse(cached);
+  } catch(e) {}
+
+  if (!data) {
+    try {
+      const tz  = 'America/Argentina/Buenos_Aires';
+      const url = 'https://api.sunrise-sunset.org/json?lat=' + lat + '&lng=' + lng +
+                  '&date=today&tzid=' + tz + '&formatted=0';
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+      if (json.status !== 'OK') throw new Error(json.status);
+      data = json.results;
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e) {}
+    } catch(e) {
+      const el = document.getElementById(blockId);
+      if (el) el.style.display = 'none';
+      return;
+    }
+  }
+
+  function fmtHora(iso) {
+    return new Date(iso).toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit', hour12:false });
+  }
+  function fmtDuracion(seg) {
+    const h = Math.floor(seg / 3600);
+    const m = Math.floor((seg % 3600) / 60);
+    return h + 'h ' + m + 'min';
+  }
+
+  const el = document.getElementById(blockId);
+  if (!el) return;
+
+  el.innerHTML =
+    '<div class="sec-title">🌅 Horarios del sol hoy en esta ruta</div>' +
+    '<div class="sol-grid">' +
+      '<div class="sol-item">' +
+        '<span class="sol-icono">🌄</span>' +
+        '<span class="sol-label">Amanecer</span>' +
+        '<span class="sol-hora">' + fmtHora(data.sunrise) + '</span>' +
+      '</div>' +
+      '<div class="sol-item">' +
+        '<span class="sol-icono">🌇</span>' +
+        '<span class="sol-label">Atardecer</span>' +
+        '<span class="sol-hora">' + fmtHora(data.sunset) + '</span>' +
+      '</div>' +
+      '<div class="sol-item">' +
+        '<span class="sol-icono">☀️</span>' +
+        '<span class="sol-label">Mediodía solar</span>' +
+        '<span class="sol-hora">' + fmtHora(data.solar_noon) + '</span>' +
+      '</div>' +
+      '<div class="sol-item">' +
+        '<span class="sol-icono">⏱</span>' +
+        '<span class="sol-label">Luz del día</span>' +
+        '<span class="sol-hora sol-duracion">' + fmtDuracion(data.day_length) + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<p class="sol-credit">Datos: <a href="https://sunrise-sunset.org" target="_blank" rel="noopener">sunrise-sunset.org</a></p>';
 }
 
 function checkGalleryEmpty(id) {
