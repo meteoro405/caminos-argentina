@@ -1076,7 +1076,9 @@ async function loadSol(d, lat, lng) {
 
   if (!lunaData) {
     // USNO: orto/ocaso de la luna + fase actual
-    // date=today, coords=lat,lng, tz=-3 (Argentina)
+    // Estructura real: properties.data = [{phen:"Rise"|"Set"|"Upper Transit", time:"HH:MM"}]
+    // properties.curphase = "Waning Crescent" etc.
+    // properties.fracillum = "72%" etc.
     const usnoUrl = 'https://aa.usno.navy.mil/api/rstt/oneday?date=' + today +
                     '&coords=' + lat.toFixed(4) + ',' + lng.toFixed(4) +
                     '&tz=-3&dst=false';
@@ -1084,24 +1086,21 @@ async function loadSol(d, lat, lng) {
       fetch(usnoUrl)
         .then(r => r.json())
         .then(j => {
-          if (j && j.properties) {
-            const props = j.properties;
-            // Extraer orto/ocaso lunar
-            const moonData = props.data ? props.data.find(item => item.phen && item.phen.includes('Moon')) : null;
-            // Buscar fracción iluminada y fase
+          // Estructura real: j.properties.data.moondata, curphase, fracillum
+          if (j && j.properties && j.properties.data) {
+            const data = j.properties.data;
             lunaData = {
-              moonrise:  null,
-              moonset:   null,
-              phase:     props.curphase || null,
-              fracIlum:  props.fracillum || null,
+              moonrise: null,
+              moonset:  null,
+              phase:    data.curphase  || null,
+              fracIlum: data.fracillum || null,
+              nextPhase: data.closestphase ? data.closestphase.phase + ' · ' +
+                         data.closestphase.day + '/' + data.closestphase.month : null,
             };
-            // Buscar moonrise/moonset en los datos de fenómenos
-            if (props.moondata) {
-              props.moondata.forEach(item => {
-                if (item.phen === 'Rise') lunaData.moonrise = item.time;
-                if (item.phen === 'Set')  lunaData.moonset  = item.time;
-              });
-            }
+            (data.moondata || []).forEach(item => {
+              if (item.phen === 'Rise') lunaData.moonrise = item.time;
+              if (item.phen === 'Set')  lunaData.moonset  = item.time;
+            });
           }
         })
         .catch(() => {})
@@ -1153,6 +1152,12 @@ async function loadSol(d, lat, lng) {
             '<span class="sol-icono">✨</span>' +
             '<span class="sol-label">Iluminación</span>' +
             '<span class="sol-hora sol-duracion">' + ilum + '</span>' +
+          '</div>' : '') +
+        (lunaData.nextPhase ?
+          '<div class="sol-item sol-item-wide">' +
+            '<span class="sol-icono">📅</span>' +
+            '<span class="sol-label">Próxima fase</span>' +
+            '<span class="sol-hora sol-duracion">' + lunaData.nextPhase + '</span>' +
           '</div>' : '') +
       '</div>';
   }

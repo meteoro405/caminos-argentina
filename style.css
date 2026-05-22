@@ -492,6 +492,7 @@ body {
 }
 .sol-credit a { color: var(--bronze); text-decoration: none; }
 .sol-credit a:hover { text-decoration: underline; }
+.sol-item-wide { grid-column: span 2; }
 .sol-separator {
   border: none;
   border-top: 1px solid var(--border);
