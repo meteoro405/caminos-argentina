@@ -1100,7 +1100,7 @@ async function loadSol(d, lat, lng) {
               moonset:  null,
               phase:    data.curphase  || null,
               fracIlum: data.fracillum || null,
-              nextPhase: data.closestphase ? data.closestphase.phase + ' · ' +
+              nextPhase: data.closestphase ?
                          data.closestphase.day + '/' + data.closestphase.month : null,
             };
             (data.moondata || []).forEach(item => {
@@ -1160,7 +1160,7 @@ async function loadSol(d, lat, lng) {
             '<span class="sol-hora sol-duracion">' + ilum + '</span>' +
           '</div>' : '') +
         (lunaData.nextPhase ?
-          '<div class="sol-item sol-item-wide">' +
+          '<div class="sol-item">' +
             '<span class="sol-icono">📅</span>' +
             '<span class="sol-label">Próxima fase</span>' +
             '<span class="sol-hora sol-duracion">' + lunaData.nextPhase + '</span>' +
