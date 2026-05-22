@@ -546,6 +546,67 @@ body {
 .firms-credit a { color: var(--bronze); text-decoration: none; }
 .firms-credit a:hover { text-decoration: underline; }
 
+/* ── SISMOS USGS ─────────────────────────────────────────── */
+.sismo-block {
+  border-top: 1px solid var(--border);
+  padding: 12px 18px 4px;
+}
+.sismo-loading {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; color: var(--ink-lt); padding: 6px 0;
+}
+.sismo-ok {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(30,120,30,0.08);
+  border: 1px solid rgba(30,120,30,0.25);
+  border-radius: 8px; padding: 10px 14px; margin-bottom: 8px;
+}
+.sismo-ok-icon { font-size: 20px; }
+.sismo-ok-txt {
+  font-family: 'Inter', sans-serif; font-size: 13px;
+  color: #1A5A1A; font-weight: 500; line-height: 1.4;
+}
+.sismo-alert {
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 8px;
+}
+.sismo-red    { background: rgba(180,30,30,0.08); border: 1px solid rgba(180,30,30,0.35); }
+.sismo-orange { background: rgba(200,100,20,0.08); border: 1px solid rgba(200,100,20,0.35); }
+.sismo-yellow { background: rgba(180,150,20,0.08); border: 1px solid rgba(180,150,20,0.35); }
+.sismo-green  { background: rgba(30,120,30,0.06); border: 1px solid rgba(30,120,30,0.20); }
+.sismo-mag-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 5px;
+}
+.sismo-mag {
+  font-family: 'Inter', sans-serif; font-size: 22px; font-weight: 700;
+  color: var(--ink); letter-spacing: -0.5px;
+}
+.sismo-nivel {
+  font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase; color: var(--ink-md);
+}
+.sismo-lugar {
+  font-family: 'Inter', sans-serif; font-size: 13px;
+  color: var(--ink); margin-bottom: 6px; line-height: 1.4;
+}
+.sismo-meta {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;
+  font-family: 'Inter', sans-serif; font-size: 12px; color: var(--ink-md);
+}
+.sismo-link {
+  display: inline-flex; align-items: center;
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+  color: #1A3A5A; text-decoration: none;
+  background: rgba(26,58,90,0.08); border: 1px solid rgba(26,58,90,0.25);
+  border-radius: 5px; padding: 4px 10px; transition: background 0.15s;
+}
+.sismo-link:hover { background: rgba(26,58,90,0.15); }
+.sismo-credit {
+  font-family: 'Inter', sans-serif; font-size: 11px;
+  color: var(--ink-lt); margin: 0 0 8px; text-align: right;
+}
+.sismo-credit a { color: var(--bronze); text-decoration: none; }
+.sismo-credit a:hover { text-decoration: underline; }
+
 /* ── RESPONSIVE ─────────────────────────────────────────── */
 @media (max-width: 680px) {
   html, body { overflow: hidden; }
@@ -915,8 +976,9 @@ body {
 
 /* ── GRID DE ÍCONOS PN (idéntico al superior) ────────────── */
 /* ── TTS del Parque Nacional ──────────────────────────────── */
-.pn-desc-wrap { width: 100%; }
-.pn-tts-btn { margin: 8px 18px 6px; }
+.pn-desc-wrap { width: 100%; display: flex; flex-direction: column; align-items: center; }
+.pn-tts-btn { margin: 10px auto 8px; }
+.pn-desc-wrap .pn-desc { width: 100%; }
 
 .pn-icons-grid {
   border-top: 1px solid var(--border);

@@ -395,7 +395,7 @@ async function loadFirms(d, lat, lng) {
         '<span class="firms-ok-icon">✅</span>' +
         '<span class="firms-ok-txt">Sin focos detectados en los últimos 3 días en un radio de ~100 km</span>' +
       '</div>' +
-      '<p class="firms-credit">Datos: <a href="https://firms.nasa.gov" target="_blank" rel="noopener">NASA FIRMS</a> · Satélite VIIRS · Puede incluir quemas agrícolas</p>';
+      '<p class="firms-credit"><a href="https://firms.nasa.gov" target="_blank" rel="noopener">NASA FIRMS</a> · VIIRS · Puede incluir quemas agrícolas</p>';
     return;
   }
 
@@ -439,11 +439,115 @@ async function loadFirms(d, lat, lng) {
         (altaConf.length ? `<span><strong>${altaConf.length}</strong> conf. alta</span>` : '') +
         `<span>Último: ${fmtAcq(ultimo)}</span>` +
       `</div>` +
-      `<a class="firms-link" href="https://firms.nasa.gov/map/#d:24hrs;@${lng},${lat},9z" target="_blank" rel="noopener">` +
+      `<a class="firms-link" href="https://firms.modaps.eosdis.nasa.gov/map/#d:24hrs;@${lng},${lat},9z" target="_blank" rel="noopener">` +
         `Ver en mapa NASA →` +
       `</a>` +
     `</div>` +
-    '<p class="firms-credit">Datos: <a href="https://firms.nasa.gov" target="_blank" rel="noopener">NASA FIRMS</a> · Satélite VIIRS · Radio ~100 km · Puede incluir quemas agrícolas</p>';
+    '<p class="firms-credit"><a href="https://firms.nasa.gov" target="_blank" rel="noopener">NASA FIRMS</a> · VIIRS · ~100 km · Incluye quemas agrícolas</p>';
+}
+
+/* ── SISMOS USGS ────────────────────────────────────────── */
+async function loadSismos(d, lat, lng) {
+  const blockId  = 'sismo_' + d.nombre.replace(/[^a-z0-9]/gi,'_');
+  const today    = new Date().toISOString().slice(0,10);
+  const cacheKey = 'sismo_' + lat.toFixed(2) + '_' + lng.toFixed(2) + '_' + today;
+
+  let sismos = null;
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) sismos = JSON.parse(cached);
+  } catch(e) {}
+
+  if (sismos === null) {
+    try {
+      // Últimos 30 días, radio 200km, magnitud >= 2.5
+      const end   = new Date();
+      const start = new Date(end - 30 * 24 * 3600 * 1000);
+      const fmt   = d => d.toISOString().slice(0,10);
+      const url   = 'https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson' +
+                    '&starttime=' + fmt(start) +
+                    '&endtime='   + fmt(end) +
+                    '&latitude='  + lat.toFixed(4) +
+                    '&longitude=' + lng.toFixed(4) +
+                    '&maxradius=2' +   // 2 grados ≈ ~220 km
+                    '&minmagnitude=2.5' +
+                    '&orderby=magnitude' +
+                    '&limit=10';
+      const res  = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+      sismos = json.features || [];
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(sismos)); } catch(e) {}
+    } catch(e) {
+      const el = document.getElementById(blockId);
+      if (el) el.style.display = 'none';
+      return;
+    }
+  }
+
+  const el = document.getElementById(blockId);
+  if (!el) return;
+
+  if (sismos.length === 0) {
+    el.innerHTML =
+      '<div class="sec-title">🌎 Actividad sísmica</div>' +
+      '<div class="sismo-ok">' +
+        '<span class="sismo-ok-icon">✅</span>' +
+        '<span class="sismo-ok-txt">Sin sismos M≥2.5 en los últimos 30 días en ~200 km</span>' +
+      '</div>' +
+      '<p class="sismo-credit"><a href="https://earthquake.usgs.gov" target="_blank" rel="noopener">USGS</a></p>';
+    return;
+  }
+
+  // El más significativo (ya viene ordenado por magnitud)
+  const top = sismos[0].properties;
+  const mag = top.mag;
+
+  // Fecha legible
+  function fmtDate(ms) {
+    const d = new Date(ms);
+    return d.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric',
+      timeZone:'America/Argentina/Buenos_Aires' }) + ' ' +
+      d.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit',
+      timeZone:'America/Argentina/Buenos_Aires' });
+  }
+
+  // Nivel según magnitud
+  let color, emoji, nivel;
+  if (mag >= 6.0)      { color='red';    emoji='🔴'; nivel='FUERTE'; }
+  else if (mag >= 4.5) { color='orange'; emoji='🟠'; nivel='MODERADO'; }
+  else if (mag >= 3.0) { color='yellow'; emoji='🟡'; nivel='LEVE'; }
+  else                 { color='green';  emoji='🟢'; nivel='MUY LEVE'; }
+
+  // Lugar del epicentro (traducción básica)
+  const lugar = (top.place||'')
+    .replace('km NW of','km NO de').replace('km NE of','km NE de')
+    .replace('km SW of','km SO de').replace('km SE of','km SE de')
+    .replace('km N of','km N de').replace('km S of','km S de')
+    .replace('km E of','km E de').replace('km W of','km O de')
+    .replace('km WNW of','km ONO de').replace('km ENE of','km ENE de')
+    .replace('km SSE of','km SSE de').replace('km SSW of','km SSO de')
+    .replace('km NNE of','km NNE de').replace('km NNW of','km NNO de');
+
+  // Profundidad
+  const prof = sismos[0].geometry.coordinates[2];
+
+  el.innerHTML =
+    '<div class="sec-title">🌎 Actividad sísmica reciente</div>' +
+    `<div class="sismo-alert sismo-${color}">` +
+      `<div class="sismo-mag-row">` +
+        `<div class="sismo-mag">${emoji} M ${mag.toFixed(1)}</div>` +
+        `<div class="sismo-nivel">${nivel}</div>` +
+      `</div>` +
+      (lugar ? `<div class="sismo-lugar">${lugar}</div>` : '') +
+      `<div class="sismo-meta">` +
+        `<span>📅 ${fmtDate(top.time)}</span>` +
+        (prof ? `<span>⬇ Prof. ${Math.round(prof)} km</span>` : '') +
+        (sismos.length > 1 ? `<span>+${sismos.length-1} más</span>` : '') +
+      `</div>` +
+      `<a class="sismo-link" href="${top.url}" target="_blank" rel="noopener">Ver en USGS →</a>` +
+    `</div>` +
+    '<p class="sismo-credit"><a href="https://earthquake.usgs.gov" target="_blank" rel="noopener">USGS Earthquake Hazards</a> · Últimos 30 días · Radio ~200 km</p>';
 }
 
 /* ── HIGHLIGHT ───────────────────────────────────────────── */
@@ -632,7 +736,7 @@ function renderDetail(d) {
               const mc = d.wazeSrc.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
               if (!mc) return '';
               const lat = mc[1], lng = mc[2];
-              const url = `https://www.google.com/maps/search/estaci%C3%B3n+de+servicio/@${lat},${lng},13z`;
+              const url = `https://www.google.com/maps/search/estaci%C3%B3n+de+nafta+combustible/@${lat},${lng},13z`;
               return `<a class="estacion-btn" href="${url}" target="_blank" rel="noopener">⛽ Estaciones</a>`;
             })()
         ) +
@@ -690,7 +794,7 @@ function renderDetail(d) {
             `</button>` +
             `<p class="pn-desc">${d.pnDesc}</p>` +
           `</div>`
-        : '') +
+        : (d.iconopn ? `<div class="pn-desc-wrap"></div>` : '')) +
       `</div>`
     : '') +
 
@@ -821,6 +925,11 @@ function renderDetail(d) {
       `<div class="firms-loading">🔥 Verificando actividad ígnea…</div>` +
     `</div>` : '') +
 
+    // Sismos USGS — carga asíncrona
+    (d.wazeSrc ? `<div class="sismo-block" id="sismo_${d.nombre.replace(/[^a-z0-9]/gi,'_')}">` +
+      `<div class="sismo-loading">🌎 Verificando actividad sísmica…</div>` +
+    `</div>` : '') +
+
     // Paso Fronterizo (después del clima, antes de Acerca de)
     (d.pasoPf || d.horarioPf ?
       `<div class="pf-block">` +
@@ -896,6 +1005,7 @@ function renderDetail(d) {
       const lng = parseFloat(mc[2]);
       loadSol(d, lat, lng);
       loadFirms(d, lat, lng);
+      loadSismos(d, lat, lng);
     }
   }
 }
