@@ -644,7 +644,6 @@ function renderDetail(d) {
   const tipoLabel = d.tipo==="RUTA ESCÉNICA"?"Rutas Escénicas":d.tipo.charAt(0)+d.tipo.slice(1).toLowerCase()+"s";
   function esc(s){ return (s||'').replace(/\\/g,"\\\\").replace(/'/g,"\\'"); }
   const mapSrcJs = d.mapSrc ? `'${esc(d.mapSrc)}'` : "null";
-  const obsEscJs = (d.obs||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;');
   const obsClass = d.warn?"obs-warn":(d.obs.toLowerCase().startsWith("de ")||d.obs.toLowerCase().startsWith("desde "))?"obs-route":"obs-info";
 
   // Map img helper — uses explicit filename fields when present, falls back to slug
@@ -706,7 +705,8 @@ function renderDetail(d) {
     (d.obs ? `<div class="obs-block obs-above-map">` +
       `<div class="obs-title-row">` +
         `<div class="sec-title"><span class="sec-title-icon">📝</span>Observaciones</div>` +
-        `<button class="tts-btn" onclick="speakObs('${obsEscJs}',this)" title="Escuchar">` +
+        `<button class="tts-btn" onclick="speakObs(this.dataset.text,this)" title="Escuchar" ` +
+          `data-text="${(d.obs||'').replace(/\n/g,' ').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">` +
           `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">` +
             `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>` +
             `<path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>` +
