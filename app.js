@@ -550,6 +550,101 @@ async function loadSismos(d, lat, lng) {
     '<p class="sismo-credit"><a href="https://earthquake.usgs.gov" target="_blank" rel="noopener">USGS Earthquake Hazards</a> · Últimos 30 días · Radio ~200 km</p>';
 }
 
+/* ── CONDICIONES MARINAS (Open-Meteo Marine) ─────────────── */
+async function loadMar(d, lat, lng) {
+  const blockId  = 'mar_' + d.nombre.replace(/[^a-z0-9]/gi,'_');
+  const today    = new Date().toISOString().slice(0,10);
+  const cacheKey = 'mar_' + lat.toFixed(2) + '_' + lng.toFixed(2) + '_' + today;
+
+  let marData = null;
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) marData = JSON.parse(cached);
+  } catch(e) {}
+
+  if (marData === null) {
+    try {
+      // Hora actual para extraer el valor más cercano del hourly
+      const url = 'https://marine-api.open-meteo.com/v1/marine' +
+                  '?latitude=' + lat.toFixed(4) +
+                  '&longitude=' + lng.toFixed(4) +
+                  '&hourly=wave_height,wave_period,wind_wave_height,swell_wave_height' +
+                  '&daily=wave_height_max' +
+                  '&timezone=America%2FArgentina%2FBuenos_Aires' +
+                  '&forecast_days=2';
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+
+      // Encontrar el índice de la hora actual en el array hourly
+      const now  = new Date();
+      const nowH = now.getHours();
+      // hourly.time son strings "YYYY-MM-DDTHH:00", buscar el de hoy más cercano
+      const times = json.hourly && json.hourly.time ? json.hourly.time : [];
+      let idx = 0;
+      for (let i = 0; i < times.length; i++) {
+        const t = times[i];
+        if (t.startsWith(today) && parseInt(t.slice(11,13)) <= nowH) idx = i;
+      }
+
+      const h = json.hourly || {};
+      const dly = json.daily || {};
+      marData = {
+        waveH:   h.wave_height    ? h.wave_height[idx]    : null,
+        waveP:   h.wave_period    ? h.wave_period[idx]    : null,
+        windW:   h.wind_wave_height ? h.wind_wave_height[idx] : null,
+        swellW:  h.swell_wave_height ? h.swell_wave_height[idx] : null,
+        maxHoy:  dly.wave_height_max ? dly.wave_height_max[0]  : null,
+        maxMan:  dly.wave_height_max && dly.wave_height_max[1] != null ? dly.wave_height_max[1] : null,
+      };
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(marData)); } catch(e) {}
+    } catch(e) {
+      const el = document.getElementById(blockId);
+      if (el) el.style.display = 'none';
+      return;
+    }
+  }
+
+  const el = document.getElementById(blockId);
+  if (!el) return;
+
+  // Si no hay datos válidos, ocultar el bloque silenciosamente
+  if (marData.waveH === null && marData.maxHoy === null) {
+    el.style.display = 'none';
+    return;
+  }
+
+  // Nivel de estado según altura de ola
+  const h = marData.waveH !== null ? marData.waveH : marData.maxHoy;
+  let nivel, color, emoji;
+  if (h === null)  { nivel = '—';           color = 'calm'; emoji = '🟢'; }
+  else if (h < 0.5){ nivel = 'CALMO';       color = 'calm'; emoji = '🟢'; }
+  else if (h < 1.5){ nivel = 'LEVE';        color = 'leve'; emoji = '🟡'; }
+  else if (h < 3.0){ nivel = 'MODERADO';    color = 'mod';  emoji = '🟠'; }
+  else              { nivel = 'ALTO';        color = 'alto'; emoji = '🔴'; }
+
+  function fmt1(v) { return v !== null && v !== undefined ? v.toFixed(1) + ' m' : '—'; }
+  function fmt0(v) { return v !== null && v !== undefined ? Math.round(v) + ' s' : '—'; }
+
+  el.innerHTML =
+    '<div class="sec-title mar-title">🌊 Condiciones marinas</div>' +
+    `<div class="mar-alert mar-${color}">` +
+      `<div class="mar-nivel-row">` +
+        `<span class="mar-nivel">${emoji} ${nivel}</span>` +
+        (marData.waveH !== null ? `<span class="mar-ola-grande">${fmt1(marData.waveH)}</span>` : '') +
+      `</div>` +
+      `<div class="mar-grid">` +
+        (marData.waveH  !== null ? `<div class="mar-item"><span class="mar-lbl">Oleaje actual</span><span class="mar-val">${fmt1(marData.waveH)}</span></div>` : '') +
+        (marData.waveP  !== null ? `<div class="mar-item"><span class="mar-lbl">Período</span><span class="mar-val">${fmt0(marData.waveP)}</span></div>` : '') +
+        (marData.swellW !== null ? `<div class="mar-item"><span class="mar-lbl">Swell</span><span class="mar-val">${fmt1(marData.swellW)}</span></div>` : '') +
+        (marData.windW  !== null ? `<div class="mar-item"><span class="mar-lbl">Ola de viento</span><span class="mar-val">${fmt1(marData.windW)}</span></div>` : '') +
+        (marData.maxHoy !== null ? `<div class="mar-item"><span class="mar-lbl">Máx. hoy</span><span class="mar-val">${fmt1(marData.maxHoy)}</span></div>` : '') +
+        (marData.maxMan !== null ? `<div class="mar-item"><span class="mar-lbl">Máx. mañana</span><span class="mar-val">${fmt1(marData.maxMan)}</span></div>` : '') +
+      `</div>` +
+    `</div>` +
+    '<p class="mar-credit"><a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo Marine</a> · ERA5 · Datos horarios</p>';
+}
+
 /* ── HIGHLIGHT ───────────────────────────────────────────── */
 function highlight(text, query) {
   if (!query || !text) return text||"";
@@ -933,6 +1028,11 @@ function renderDetail(d) {
       `<div class="sismo-loading">🌎 Verificando actividad sísmica…</div>` +
     `</div>` : '') +
 
+    // Condiciones marinas — solo para rutas costeras (tienen wazeSrc y d.esCostera)
+    (d.wazeSrc && d.esCostera ? `<div class="mar-block" id="mar_${d.nombre.replace(/[^a-z0-9]/gi,'_')}">` +
+      `<div class="mar-loading">🌊 Cargando condiciones marinas…</div>` +
+    `</div>` : '') +
+
     // Paso Fronterizo (después del clima, antes de Acerca de)
     (d.pasoPf || d.horarioPf ?
       `<div class="pf-block">` +
@@ -1012,6 +1112,7 @@ function renderDetail(d) {
       loadSol(d, lat, lng);
       loadFirms(d, lat, lng);
       loadSismos(d, lat, lng);
+      if (d.esCostera) loadMar(d, lat, lng);
     }
   }
 }

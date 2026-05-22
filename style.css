@@ -619,6 +619,55 @@ body {
 .sismo-credit a { color: var(--bronze); text-decoration: none; }
 .sismo-credit a:hover { text-decoration: underline; }
 
+/* ── CONDICIONES MARINAS (Open-Meteo Marine) ─────────────── */
+.mar-block {
+  border-top: 1px solid var(--border);
+  padding: 12px 18px 4px;
+}
+.mar-loading {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; color: var(--ink-lt); padding: 6px 0;
+}
+.mar-title { margin-bottom: 8px; }
+.mar-alert {
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 8px;
+}
+.mar-calm { background: rgba(30,120,30,0.06);  border: 1px solid rgba(30,120,30,0.20); }
+.mar-leve { background: rgba(180,150,20,0.08); border: 1px solid rgba(180,150,20,0.35); }
+.mar-mod  { background: rgba(200,100,20,0.08); border: 1px solid rgba(200,100,20,0.35); }
+.mar-alto { background: rgba(180,30,30,0.08);  border: 1px solid rgba(180,30,30,0.35); }
+.mar-nivel-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+}
+.mar-nivel {
+  font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase; color: var(--ink-md);
+}
+.mar-ola-grande {
+  font-family: 'Inter', sans-serif; font-size: 22px; font-weight: 700;
+  color: var(--ink); letter-spacing: -0.5px;
+}
+.mar-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 10px;
+}
+.mar-item {
+  display: flex; flex-direction: column; gap: 1px;
+}
+.mar-lbl {
+  font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-lt);
+}
+.mar-val {
+  font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+  color: var(--ink);
+}
+.mar-credit {
+  font-family: 'Inter', sans-serif; font-size: 11px;
+  color: var(--ink-lt); margin: 0 0 8px; text-align: right;
+}
+.mar-credit a { color: var(--bronze); text-decoration: none; }
+.mar-credit a:hover { text-decoration: underline; }
+
 /* ── PERFIL ALTIMÉTRICO ──────────────────────────────────── */
 .perfil-block {
   border-top: 1px solid var(--border);
