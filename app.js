@@ -758,6 +758,9 @@ function renderDetail(d) {
     // Ícono Master (antes de Mejor época, mismo estilo que PN)
     (d.iconoMaster ? `<div class="pn-block master-block"><img src="iconos/${d.iconoMaster}" class="master-icon" alt="Ruta principal"></div>` : '') +
 
+    // Perfil altimétrico GPX — carga asíncrona si hay archivo JSON
+    `<div class="perfil-block" id="perfil_${slug}"></div>` +
+
     // Mejor época
     (d.epoca ? `<div class="info-block epoca-block"><div class="sec-title"><span class="sec-title-icon">🗓</span>Mejor época</div><p class="info-txt epoca-txt">${d.epoca}</p></div>` : "") +
 
@@ -997,6 +1000,9 @@ function renderDetail(d) {
     }, 150);
   }
 
+  // Cargar perfil altimétrico si hay GPX
+  loadPerfil(d, slug);
+
   // Cargar amanecer/atardecer e incendios si hay coords
   if (d.wazeSrc) {
     const mc = d.wazeSrc.match(/ll=(-?[\d.]+),(-?[\d.]+)/);
@@ -1191,6 +1197,134 @@ async function loadSol(d, lat, lng) {
       '<a href="https://sunrise-sunset.org" target="_blank" rel="noopener">sunrise-sunset.org</a>' +
       (lunaData ? ' · <a href="https://aa.usno.navy.mil" target="_blank" rel="noopener">USNO</a>' : '') +
     '</p>';
+}
+
+/* ── PERFIL ALTIMÉTRICO (GPX + Open-Meteo) ───────────────── */
+async function loadPerfil(d, slug) {
+  const blockId  = 'perfil_' + slug;
+  const el = document.getElementById(blockId);
+  if (!el) return;
+
+  // Nombre del archivo JSON: slug de la ruta
+  const fname = slug.replace(/^(ruta_escenica_|ruta_escénica_|quebrada_|cuesta_|abra_)/, '') ;
+  const jsonUrl = 'gpx/' + slug + '.json';
+
+  // Intentar cargar el JSON de waypoints
+  let gpxData = null;
+  try {
+    const cacheKey = 'perfil_' + slug;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) { gpxData = JSON.parse(cached); }
+    else {
+      const res = await fetch(jsonUrl);
+      if (!res.ok) return; // No hay GPX para esta ruta
+      gpxData = await res.json();
+    }
+  } catch(e) { return; }
+
+  if (!gpxData || !gpxData.puntos || gpxData.puntos.length === 0) return;
+
+  // Mostrar loading
+  el.innerHTML = '<div class="sec-title">📈 Perfil altimétrico</div><div class="perfil-loading">Cargando elevaciones…</div>';
+
+  // Obtener elevaciones desde Open-Meteo (CORS habilitado en browsers)
+  let eles = gpxData.puntos.map(p => p.ele || null);
+  const sinEle = eles.some(e => e === null);
+
+  if (sinEle) {
+    try {
+      const lats = gpxData.puntos.map(p => p.lat).join(',');
+      const lngs = gpxData.puntos.map(p => p.lng).join(',');
+      const url  = 'https://api.open-meteo.com/v1/elevation?latitude=' + lats + '&longitude=' + lngs;
+      const res  = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      eles = data.elevation || eles;
+      // Guardar con elevaciones
+      gpxData.puntos = gpxData.puntos.map((p, i) => ({ ...p, ele: eles[i] }));
+      try { sessionStorage.setItem('perfil_' + slug, JSON.stringify(gpxData)); } catch(e) {}
+    } catch(e) {
+      el.style.display = 'none';
+      return;
+    }
+  }
+
+  // ── Generar SVG del perfil ──
+  const dists = gpxData.puntos.map(p => p.km);
+  const totalKm = dists[dists.length - 1];
+  const validEles = eles.filter(e => e !== null && e !== undefined);
+  if (validEles.length === 0) { el.style.display = 'none'; return; }
+
+  const minE = Math.min(...validEles);
+  const maxE = Math.max(...validEles);
+  const rango = maxE - minE || 1;
+
+  const W = 320, H = 100, PL = 46, PR = 10, PT = 10, PB = 24;
+  const gW = W - PL - PR, gH = H - PT - PB;
+
+  // Convertir a coordenadas SVG
+  function xSvg(km) { return PL + (km / totalKm) * gW; }
+  function ySvg(e)  { return PT + gH - ((e - minE) / rango) * gH; }
+
+  // Construir polyline
+  const pts = gpxData.puntos
+    .map((p, i) => eles[i] !== null ? xSvg(p.km).toFixed(1) + ',' + ySvg(eles[i]).toFixed(1) : null)
+    .filter(Boolean)
+    .join(' ');
+
+  // Area bajo la curva (relleno)
+  const firstX = xSvg(dists[0]).toFixed(1);
+  const lastX  = xSvg(dists[dists.length-1]).toFixed(1);
+  const bottomY = (PT + gH).toFixed(1);
+  const areaPath = 'M ' + firstX + ',' + bottomY + ' L ' + pts.split(' ').map((p,i) => i===0 ? p : p).join(' L ') + ' L ' + lastX + ',' + bottomY + ' Z';
+
+  // Etiquetas del eje Y
+  const yTicks = 3;
+  let yLabels = '';
+  for (let i = 0; i <= yTicks; i++) {
+    const e = minE + (rango * i / yTicks);
+    const y = ySvg(e).toFixed(1);
+    yLabels += '<text x="' + (PL - 4) + '" y="' + y + '" text-anchor="end" dominant-baseline="middle" font-size="8" fill="#8A6A50">' + Math.round(e) + '</text>';
+    yLabels += '<line x1="' + PL + '" y1="' + y + '" x2="' + (PL + gW) + '" y2="' + y + '" stroke="#D4C080" stroke-width="0.5" stroke-dasharray="3,3"/>';
+  }
+
+  // Etiquetas del eje X
+  const xTicks = 5;
+  let xLabels = '';
+  for (let i = 0; i <= xTicks; i++) {
+    const km = totalKm * i / xTicks;
+    const x = xSvg(km).toFixed(1);
+    xLabels += '<text x="' + x + '" y="' + (PT + gH + 14) + '" text-anchor="middle" font-size="8" fill="#8A6A50">' + Math.round(km) + 'km</text>';
+  }
+
+  const svg =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">' +
+    '<rect width="' + W + '" height="' + H + '" fill="transparent"/>' +
+    yLabels + xLabels +
+    '<path d="' + areaPath + '" fill="rgba(160,85,42,0.12)"/>' +
+    '<polyline points="' + pts + '" fill="none" stroke="#A0552A" stroke-width="1.5" stroke-linejoin="round"/>' +
+    // Punto más alto
+    (() => {
+      const maxIdx = eles.indexOf(Math.max(...validEles));
+      if (maxIdx < 0) return '';
+      const mx = xSvg(dists[maxIdx]).toFixed(1);
+      const my = ySvg(maxE).toFixed(1);
+      return '<circle cx="' + mx + '" cy="' + my + '" r="3" fill="#C0100A"/>' +
+             '<text x="' + mx + '" y="' + (parseFloat(my)-5) + '" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#C0100A">' + Math.round(maxE) + 'm</text>';
+    })() +
+    // Punto inicio y fin
+    '<text x="' + xSvg(0) + '" y="' + (ySvg(eles[0] || minE) - 5) + '" text-anchor="start" font-size="7" fill="#5A3A18">' + Math.round(eles[0] || minE) + 'm</text>' +
+    '</svg>';
+
+  el.innerHTML =
+    '<div class="sec-title">📈 Perfil altimétrico · ' + gpxData.distancia_km + ' km</div>' +
+    '<div class="perfil-svg-wrap">' + svg + '</div>' +
+    '<div class="perfil-stats">' +
+      '<span>⬇ ' + Math.round(minE) + ' m</span>' +
+      '<span>⬆ ' + Math.round(maxE) + ' m</span>' +
+      '<span>↕ ' + Math.round(maxE - minE) + ' m desnivel</span>' +
+    '</div>' +
+    '<p class="perfil-credit"><a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · SRTM</p>';
 }
 
 function checkGalleryEmpty(id) {
