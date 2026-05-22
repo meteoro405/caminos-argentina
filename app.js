@@ -1016,67 +1016,176 @@ async function loadSol(d, lat, lng) {
   const cacheKey = 'sol_' + lat.toFixed(3) + '_' + lng.toFixed(3) + '_' + today;
   const blockId  = 'sol_' + d.nombre.replace(/[^a-z0-9]/gi,'_');
 
-  let data = null;
-  try {
-    const cached = sessionStorage.getItem(cacheKey);
-    if (cached) data = JSON.parse(cached);
-  } catch(e) {}
-
-  if (!data) {
-    try {
-      const tz  = 'America/Argentina/Buenos_Aires';
-      const url = 'https://api.sunrise-sunset.org/json?lat=' + lat + '&lng=' + lng +
-                  '&date=today&tzid=' + tz + '&formatted=0';
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const json = await res.json();
-      if (json.status !== 'OK') throw new Error(json.status);
-      data = json.results;
-      try { sessionStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e) {}
-    } catch(e) {
-      const el = document.getElementById(blockId);
-      if (el) el.style.display = 'none';
-      return;
-    }
-  }
-
+  // Helpers de formato
   function fmtHora(iso) {
     return new Date(iso).toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit', hour12:false });
+  }
+  function fmtHoraHHMM(hhmm) {
+    // USNO devuelve formato "HH:MM" en hora local ya con tz aplicado
+    return hhmm || '—';
   }
   function fmtDuracion(seg) {
     const h = Math.floor(seg / 3600);
     const m = Math.floor((seg % 3600) / 60);
     return h + 'h ' + m + 'min';
   }
+  function faseEmoji(phase) {
+    const p = (phase || '').toLowerCase();
+    if (p.includes('new'))            return '🌑';
+    if (p.includes('waxing crescent'))return '🌒';
+    if (p.includes('first quarter'))  return '🌓';
+    if (p.includes('waxing gibbous')) return '🌔';
+    if (p.includes('full'))           return '🌕';
+    if (p.includes('waning gibbous')) return '🌖';
+    if (p.includes('last quarter'))   return '🌗';
+    if (p.includes('waning crescent'))return '🌘';
+    return '🌙';
+  }
+  function faseLabel(phase) {
+    const map = {
+      'new moon':'Luna nueva', 'waxing crescent':'Cuarto creciente',
+      'first quarter':'Cuarto creciente', 'waxing gibbous':'Gibosa creciente',
+      'full moon':'Luna llena', 'waning gibbous':'Gibosa menguante',
+      'last quarter':'Cuarto menguante', 'waning crescent':'Cuarto menguante'
+    };
+    return map[(phase||'').toLowerCase()] || phase || '—';
+  }
+
+  // Caché combinado
+  let cache = null;
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) cache = JSON.parse(cached);
+  } catch(e) {}
+
+  let solData = cache ? cache.sol : null;
+  let lunaData = cache ? cache.luna : null;
+
+  // Llamadas en paralelo si alguno falta
+  const promises = [];
+
+  if (!solData) {
+    promises.push(
+      fetch('https://api.sunrise-sunset.org/json?lat=' + lat + '&lng=' + lng +
+            '&date=today&tzid=America/Argentina/Buenos_Aires&formatted=0')
+        .then(r => r.json())
+        .then(j => { if (j.status === 'OK') solData = j.results; })
+        .catch(() => {})
+    );
+  }
+
+  if (!lunaData) {
+    // USNO: orto/ocaso de la luna + fase actual
+    // date=today, coords=lat,lng, tz=-3 (Argentina)
+    const usnoUrl = 'https://aa.usno.navy.mil/api/rstt/oneday?date=' + today +
+                    '&coords=' + lat.toFixed(4) + ',' + lng.toFixed(4) +
+                    '&tz=-3&dst=false';
+    promises.push(
+      fetch(usnoUrl)
+        .then(r => r.json())
+        .then(j => {
+          if (j && j.properties) {
+            const props = j.properties;
+            // Extraer orto/ocaso lunar
+            const moonData = props.data ? props.data.find(item => item.phen && item.phen.includes('Moon')) : null;
+            // Buscar fracción iluminada y fase
+            lunaData = {
+              moonrise:  null,
+              moonset:   null,
+              phase:     props.curphase || null,
+              fracIlum:  props.fracillum || null,
+            };
+            // Buscar moonrise/moonset en los datos de fenómenos
+            if (props.moondata) {
+              props.moondata.forEach(item => {
+                if (item.phen === 'Rise') lunaData.moonrise = item.time;
+                if (item.phen === 'Set')  lunaData.moonset  = item.time;
+              });
+            }
+          }
+        })
+        .catch(() => {})
+    );
+  }
+
+  if (promises.length > 0) await Promise.all(promises);
+
+  // Guardar en caché
+  if (solData || lunaData) {
+    try { sessionStorage.setItem(cacheKey, JSON.stringify({ sol: solData, luna: lunaData })); } catch(e) {}
+  }
 
   const el = document.getElementById(blockId);
   if (!el) return;
 
+  if (!solData) { el.style.display = 'none'; return; }
+
+  // ── Construir HTML ──
+  let lunaHtml = '';
+  if (lunaData) {
+    const emoji = faseEmoji(lunaData.phase);
+    const label = faseLabel(lunaData.phase);
+    const ilum  = lunaData.fracIlum ? lunaData.fracIlum : null;
+
+    lunaHtml =
+      '<div class="sol-separator"></div>' +
+      '<div class="sol-luna-title">🌙 Luna</div>' +
+      '<div class="sol-grid">' +
+        (lunaData.moonrise ?
+          '<div class="sol-item">' +
+            '<span class="sol-icono">🌅</span>' +
+            '<span class="sol-label">Sale</span>' +
+            '<span class="sol-hora">' + fmtHoraHHMM(lunaData.moonrise) + '</span>' +
+          '</div>' : '') +
+        (lunaData.moonset ?
+          '<div class="sol-item">' +
+            '<span class="sol-icono">🌇</span>' +
+            '<span class="sol-label">Se oculta</span>' +
+            '<span class="sol-hora">' + fmtHoraHHMM(lunaData.moonset) + '</span>' +
+          '</div>' : '') +
+        '<div class="sol-item">' +
+          '<span class="sol-icono">' + emoji + '</span>' +
+          '<span class="sol-label">Fase</span>' +
+          '<span class="sol-hora sol-duracion">' + label + '</span>' +
+        '</div>' +
+        (ilum ?
+          '<div class="sol-item">' +
+            '<span class="sol-icono">✨</span>' +
+            '<span class="sol-label">Iluminación</span>' +
+            '<span class="sol-hora sol-duracion">' + ilum + '</span>' +
+          '</div>' : '') +
+      '</div>';
+  }
+
   el.innerHTML =
-    '<div class="sec-title">🌅 Horarios del sol hoy en esta ruta</div>' +
+    '<div class="sec-title">🌅 Sol y luna hoy en esta ruta</div>' +
     '<div class="sol-grid">' +
       '<div class="sol-item">' +
         '<span class="sol-icono">🌄</span>' +
         '<span class="sol-label">Amanecer</span>' +
-        '<span class="sol-hora">' + fmtHora(data.sunrise) + '</span>' +
+        '<span class="sol-hora">' + fmtHora(solData.sunrise) + '</span>' +
       '</div>' +
       '<div class="sol-item">' +
         '<span class="sol-icono">🌇</span>' +
         '<span class="sol-label">Atardecer</span>' +
-        '<span class="sol-hora">' + fmtHora(data.sunset) + '</span>' +
+        '<span class="sol-hora">' + fmtHora(solData.sunset) + '</span>' +
       '</div>' +
       '<div class="sol-item">' +
         '<span class="sol-icono">☀️</span>' +
         '<span class="sol-label">Mediodía solar</span>' +
-        '<span class="sol-hora">' + fmtHora(data.solar_noon) + '</span>' +
+        '<span class="sol-hora">' + fmtHora(solData.solar_noon) + '</span>' +
       '</div>' +
       '<div class="sol-item">' +
         '<span class="sol-icono">⏱</span>' +
         '<span class="sol-label">Luz del día</span>' +
-        '<span class="sol-hora sol-duracion">' + fmtDuracion(data.day_length) + '</span>' +
+        '<span class="sol-hora sol-duracion">' + fmtDuracion(solData.day_length) + '</span>' +
       '</div>' +
     '</div>' +
-    '<p class="sol-credit">Datos: <a href="https://sunrise-sunset.org" target="_blank" rel="noopener">sunrise-sunset.org</a></p>';
+    lunaHtml +
+    '<p class="sol-credit">' +
+      '<a href="https://sunrise-sunset.org" target="_blank" rel="noopener">sunrise-sunset.org</a>' +
+      (lunaData ? ' · <a href="https://aa.usno.navy.mil" target="_blank" rel="noopener">USNO</a>' : '') +
+    '</p>';
 }
 
 function checkGalleryEmpty(id) {
