@@ -619,7 +619,7 @@ body {
 .sismo-credit a { color: var(--bronze); text-decoration: none; }
 .sismo-credit a:hover { text-decoration: underline; }
 
-/* ── CONDICIONES MARINAS (Open-Meteo Marine) ─────────────── */
+/* ── MAREAS (Marea.ooo) ──────────────────────────────────── */
 .mar-block {
   border-top: 1px solid var(--border);
   padding: 12px 18px 4px;
@@ -629,37 +629,51 @@ body {
   font-size: 13px; color: var(--ink-lt); padding: 6px 0;
 }
 .mar-title { margin-bottom: 8px; }
-.mar-alert {
-  border-radius: 8px; padding: 12px 14px; margin-bottom: 8px;
+.mar-tabla {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
 }
-.mar-calm { background: rgba(30,120,30,0.06);  border: 1px solid rgba(30,120,30,0.20); }
-.mar-leve { background: rgba(180,150,20,0.08); border: 1px solid rgba(180,150,20,0.35); }
-.mar-mod  { background: rgba(200,100,20,0.08); border: 1px solid rgba(200,100,20,0.35); }
-.mar-alto { background: rgba(180,30,30,0.08);  border: 1px solid rgba(180,30,30,0.35); }
-.mar-nivel-row {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+.mar-fila {
+  display: grid;
+  grid-template-columns: 18px 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 7px;
+  font-family: 'Inter', sans-serif;
 }
-.mar-nivel {
-  font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700;
-  letter-spacing: 1px; text-transform: uppercase; color: var(--ink-md);
+.mar-fila-plea {
+  background: rgba(26,58,120,0.07);
+  border: 1px solid rgba(26,58,120,0.20);
 }
-.mar-ola-grande {
-  font-family: 'Inter', sans-serif; font-size: 22px; font-weight: 700;
-  color: var(--ink); letter-spacing: -0.5px;
+.mar-fila-baja {
+  background: rgba(160,85,42,0.07);
+  border: 1px solid rgba(160,85,42,0.18);
 }
-.mar-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 10px;
+.mar-fila-icon {
+  font-size: 11px;
+  text-align: center;
+  color: var(--ink-lt);
 }
-.mar-item {
-  display: flex; flex-direction: column; gap: 1px;
+.mar-fila-plea .mar-fila-icon { color: #1A3A78; }
+.mar-fila-baja .mar-fila-icon { color: var(--bronze); }
+.mar-fila-tipo {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  color: var(--ink-md);
 }
-.mar-lbl {
-  font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-lt);
+.mar-fila-plea .mar-fila-tipo { color: #1A3A78; }
+.mar-fila-baja .mar-fila-tipo { color: #7A4A18; }
+.mar-fila-hora {
+  font-size: 15px; font-weight: 600;
+  color: var(--ink); font-variant-numeric: tabular-nums;
 }
-.mar-val {
-  font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
-  color: var(--ink);
+.mar-fila-alt {
+  font-size: 14px; font-weight: 700;
+  color: var(--ink); font-variant-numeric: tabular-nums;
+  text-align: right; min-width: 52px;
 }
 .mar-credit {
   font-family: 'Inter', sans-serif; font-size: 11px;
@@ -825,7 +839,6 @@ body {
   height: 270px;
   max-width: 90vw;
   object-fit: contain;
-  border-radius: 50%;
 }
 .master-icon {
   width: 160px;
