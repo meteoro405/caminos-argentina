@@ -619,7 +619,7 @@ body {
 .sismo-credit a { color: var(--bronze); text-decoration: none; }
 .sismo-credit a:hover { text-decoration: underline; }
 
-/* ── MAREAS (Marea.ooo) ──────────────────────────────────── */
+/* ── CONDICIONES MARINAS (Open-Meteo Marine) ─────────────── */
 .mar-block {
   border-top: 1px solid var(--border);
   padding: 12px 18px 4px;
@@ -628,7 +628,17 @@ body {
   font-family: 'Inter', sans-serif;
   font-size: 13px; color: var(--ink-lt); padding: 6px 0;
 }
-.mar-title { margin-bottom: 8px; }
+.mar-title { margin-bottom: 6px; }
+.mar-nivel-badge {
+  display: inline-block;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700;
+  letter-spacing: 0.5px; border-radius: 6px;
+  padding: 4px 12px; margin-bottom: 8px;
+}
+.mar-nivel-calm { background: rgba(30,120,30,0.10);  color: #1A5A1A; border: 1px solid rgba(30,120,30,0.25); }
+.mar-nivel-leve { background: rgba(180,150,20,0.10); color: #5A4A00; border: 1px solid rgba(180,150,20,0.35); }
+.mar-nivel-mod  { background: rgba(200,100,20,0.10); color: #7A3A00; border: 1px solid rgba(200,100,20,0.35); }
+.mar-nivel-alto { background: rgba(180,30,30,0.10);  color: #7A0000; border: 1px solid rgba(180,30,30,0.35); }
 .mar-tabla {
   display: flex;
   flex-direction: column;

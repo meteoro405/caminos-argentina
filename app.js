@@ -562,7 +562,6 @@ async function loadSismos(d, lat, lng) {
 }
 
 /* ── CONDICIONES MARINAS (Open-Meteo Marine) ─────────────── */
-/* ── MAREAS (Marea.ooo — FES2022) ────────────────────────── */
 async function loadMar(d, lat, lng) {
   const blockId  = 'mar_' + d.nombre.replace(/[^a-z0-9]/gi,'_');
   const today    = new Date().toISOString().slice(0,10);
@@ -576,48 +575,38 @@ async function loadMar(d, lat, lng) {
 
   if (marData === null) {
     try {
-      // Marea.ooo — API gratuita FES2022, CORS OK desde browser
-      // Devuelve extremos del día (pleamar/bajamar) con hora y altura en metros
-      const url = 'https://api.marea.ooo/v2/tides' +
+      // Open-Meteo Marine — gratuita, sin key, CORS OK desde browser
+      const url = 'https://marine-api.open-meteo.com/v1/marine' +
                   '?latitude='  + lat.toFixed(4) +
                   '&longitude=' + lng.toFixed(4) +
-                  '&duration=1440' +          // 24 horas en minutos
-                  '&interval=60' +            // resolución horaria para el gráfico
-                  '&datum=MSL' +              // nivel medio del mar
-                  '&model=FES2022';           // modelo de alta resolución
+                  '&hourly=wave_height,wave_period,wind_wave_height,swell_wave_height' +
+                  '&daily=wave_height_max' +
+                  '&timezone=America%2FArgentina%2FBuenos_Aires' +
+                  '&forecast_days=2';
 
       const res = await fetch(url);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
 
-      // Extraer extremos (pleamares y bajamares) del array de datos horarios
-      const datos = json.data || json.heights || [];
-      const extremos = [];
-
-      if (datos.length >= 3) {
-        for (let i = 1; i < datos.length - 1; i++) {
-          const prev = datos[i-1].height ?? datos[i-1].value ?? datos[i-1];
-          const curr = datos[i].height   ?? datos[i].value   ?? datos[i];
-          const next = datos[i+1].height ?? datos[i+1].value ?? datos[i+1];
-          const hora = datos[i].time || datos[i].timestamp || datos[i].datetime || '';
-          if (curr > prev && curr > next) {
-            extremos.push({ tipo: 'PLEAMAR', h: curr, hora });
-          } else if (curr < prev && curr < next) {
-            extremos.push({ tipo: 'BAJAMAR', h: curr, hora });
-          }
-        }
+      // Encontrar el índice de la hora actual en el array hourly
+      const nowH  = new Date().getHours();
+      const times = (json.hourly && json.hourly.time) ? json.hourly.time : [];
+      let idx = 0;
+      for (let i = 0; i < times.length; i++) {
+        if (times[i].startsWith(today) && parseInt(times[i].slice(11,13)) <= nowH) idx = i;
       }
 
-      // Si la API devuelve extremos directamente
-      const extremosApi = json.extremes || json.extrema || json.tidal_extremes || [];
-      if (extremosApi.length > 0 && extremos.length === 0) {
-        extremosApi.forEach(e => {
-          const tipo = (e.type || e.event || '').toLowerCase().includes('high') ? 'PLEAMAR' : 'BAJAMAR';
-          extremos.push({ tipo, h: e.height ?? e.value ?? 0, hora: e.time || e.datetime || '' });
-        });
-      }
-
-      marData = { extremos, fecha: today };
+      const h   = json.hourly || {};
+      const dly = json.daily  || {};
+      marData = {
+        waveH:  h.wave_height        ? h.wave_height[idx]        : null,
+        waveP:  h.wave_period        ? h.wave_period[idx]        : null,
+        windW:  h.wind_wave_height   ? h.wind_wave_height[idx]   : null,
+        swellW: h.swell_wave_height  ? h.swell_wave_height[idx]  : null,
+        maxHoy: dly.wave_height_max  ? dly.wave_height_max[0]    : null,
+        maxMan: (dly.wave_height_max && dly.wave_height_max[1] != null)
+                  ? dly.wave_height_max[1] : null,
+      };
       try { sessionStorage.setItem(cacheKey, JSON.stringify(marData)); } catch(e) {}
     } catch(e) {
       const el = document.getElementById(blockId);
@@ -629,43 +618,50 @@ async function loadMar(d, lat, lng) {
   const el = document.getElementById(blockId);
   if (!el) return;
 
-  if (!marData || !marData.extremos || marData.extremos.length === 0) {
+  // Sin datos válidos → ocultar silenciosamente
+  if (marData.waveH === null && marData.maxHoy === null) {
     el.style.display = 'none';
     return;
   }
 
-  // Formatear hora a HH:MM hora argentina
-  function fmtHoraMar(isoStr) {
-    if (!isoStr) return '—';
-    try {
-      return new Date(isoStr).toLocaleTimeString('es-AR', {
-        hour: '2-digit', minute: '2-digit', hour12: false,
-        timeZone: 'America/Argentina/Buenos_Aires'
-      });
-    } catch(e) { return isoStr.slice(11,16) || '—'; }
-  }
+  // Nivel según altura de ola actual (o máxima del día si no hay actual)
+  const hRef = marData.waveH !== null ? marData.waveH : marData.maxHoy;
+  let nivel, color, emoji;
+  if      (hRef === null) { nivel = '—';        color = 'calm'; emoji = '🟢'; }
+  else if (hRef < 0.5)    { nivel = 'CALMO';    color = 'calm'; emoji = '🟢'; }
+  else if (hRef < 1.5)    { nivel = 'LEVE';     color = 'leve'; emoji = '🟡'; }
+  else if (hRef < 3.0)    { nivel = 'MODERADO'; color = 'mod';  emoji = '🟠'; }
+  else                    { nivel = 'ALTO';      color = 'alto'; emoji = '🔴'; }
 
-  const extremos = marData.extremos;
-  const pleamares = extremos.filter(e => e.tipo === 'PLEAMAR');
-  const bajamares = extremos.filter(e => e.tipo === 'BAJAMAR');
+  function fmt1(v) { return (v !== null && v !== undefined) ? v.toFixed(1) + ' m' : '—'; }
+  function fmt0(v) { return (v !== null && v !== undefined) ? Math.round(v) + ' s'  : '—'; }
 
-  // Construir filas de la tabla
-  const filas = extremos.map(e => {
-    const isPlea = e.tipo === 'PLEAMAR';
-    return `<div class="mar-fila mar-fila-${isPlea ? 'plea' : 'baja'}">` +
-      `<span class="mar-fila-icon">${isPlea ? '▲' : '▽'}</span>` +
-      `<span class="mar-fila-tipo">${e.tipo}</span>` +
-      `<span class="mar-fila-hora">${fmtHoraMar(e.hora)}</span>` +
-      `<span class="mar-fila-alt">${e.h != null ? e.h.toFixed(2) + ' m' : '—'}</span>` +
-    `</div>`;
-  }).join('');
+  // Reutilizamos las clases .mar-fila como filas de datos (tipo=etiqueta, hora=valor)
+  const filas = [
+    marData.waveH  !== null ? ['plea', '〜', 'Oleaje actual',  fmt1(marData.waveH)]  : null,
+    marData.waveP  !== null ? ['plea', '↔', 'Período',        fmt0(marData.waveP)]  : null,
+    marData.swellW !== null ? ['plea', '↗', 'Swell',          fmt1(marData.swellW)] : null,
+    marData.windW  !== null ? ['baja', '💨', 'Ola de viento', fmt1(marData.windW)]  : null,
+    marData.maxHoy !== null ? ['baja', '▲', 'Máx. hoy',      fmt1(marData.maxHoy)] : null,
+    marData.maxMan !== null ? ['baja', '▲', 'Máx. mañana',   fmt1(marData.maxMan)] : null,
+  ].filter(Boolean).map(([cls, icon, lbl, val]) =>
+    `<div class="mar-fila mar-fila-${cls}">` +
+      `<span class="mar-fila-icon">${icon}</span>` +
+      `<span class="mar-fila-tipo">${lbl}</span>` +
+      `<span class="mar-fila-hora"></span>` +
+      `<span class="mar-fila-alt">${val}</span>` +
+    `</div>`
+  ).join('');
 
   el.innerHTML =
-    '<div class="sec-title mar-title">🌊 Mareas de hoy</div>' +
+    '<div class="sec-title mar-title">🌊 Condiciones marinas</div>' +
+    `<div class="mar-nivel-badge mar-nivel-${color}">${emoji} ${nivel}` +
+      (marData.waveH !== null ? ` · ${fmt1(marData.waveH)}` : '') +
+    `</div>` +
     '<div class="mar-tabla">' + filas + '</div>' +
     '<p class="mar-credit">' +
-      '<a href="https://marea.ooo" target="_blank" rel="noopener">Marea.ooo</a>' +
-      ' · FES2022 · Nivel medio del mar (MSL)' +
+      '<a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo Marine</a>' +
+      ' · ERA5 · Pronóstico horario' +
     '</p>';
 }
 
@@ -1044,7 +1040,7 @@ function renderDetail(d) {
 
     // Mareas — solo para rutas costeras
     (d.wazeSrc && d.esCostera ? `<div class="mar-block" id="mar_${d.nombre.replace(/[^a-z0-9]/gi,'_')}">` +
-      `<div class="mar-loading">🌊 Cargando tabla de mareas…</div>` +
+      `<div class="mar-loading">🌊 Cargando condiciones marinas…</div>` +
     `</div>` : '') +
 
     // Incendios NASA FIRMS — carga asíncrona
