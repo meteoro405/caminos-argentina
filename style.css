@@ -368,6 +368,74 @@ body {
 .aero-map-btn:hover { background: rgba(42,90,122,0.18); }
 
 
+
+/* ── METAR (NOAA Aviation Weather) ──────────────────────── */
+.metar-block {
+  border-top: 1px solid var(--border);
+  padding: 10px 0 4px;
+  margin-top: 8px;
+}
+.metar-loading {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; color: var(--ink-lt); padding: 4px 0;
+}
+.metar-header {
+  display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; margin-bottom: 8px;
+}
+.metar-badge {
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.5px; border-radius: 6px; padding: 4px 10px;
+}
+.metar-vfr  { background: rgba(30,120,30,0.10);  color: #1A5A1A; border: 1px solid rgba(30,120,30,0.28); }
+.metar-mvfr { background: rgba(180,130,0,0.10);  color: #5A4200; border: 1px solid rgba(180,130,0,0.30); }
+.metar-ifr  { background: rgba(180,30,30,0.10);  color: #7A0A0A; border: 1px solid rgba(180,30,30,0.28); }
+.metar-lifr { background: rgba(100,0,80,0.10);   color: #500050; border: 1px solid rgba(100,0,80,0.28);  }
+.metar-nd   { background: rgba(100,100,100,0.08);color: var(--ink-lt); border: 1px solid var(--border);  }
+.metar-hora {
+  font-family: 'Inter', sans-serif; font-size: 11px;
+  color: var(--ink-lt); margin-left: auto;
+}
+.metar-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 6px 10px; margin-bottom: 8px;
+}
+.metar-item {
+  display: flex; flex-direction: column; gap: 1px;
+}
+.metar-item-full { grid-column: 1 / -1; }
+.metar-lbl {
+  font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink-lt);
+}
+.metar-val {
+  font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+  color: var(--ink);
+}
+.metar-raw-wrap {
+  margin-bottom: 6px;
+}
+.metar-raw-toggle {
+  font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600;
+  color: var(--ink-lt); cursor: pointer; letter-spacing: 0.5px;
+  text-transform: uppercase; user-select: none;
+}
+.metar-raw-toggle:hover { color: var(--ink-md); }
+.metar-raw {
+  display: block; margin-top: 6px;
+  font-family: 'Courier New', monospace; font-size: 11px;
+  color: var(--ink-md); background: rgba(42,26,10,0.06);
+  border: 1px solid var(--border); border-radius: 5px;
+  padding: 7px 10px; line-height: 1.5;
+  word-break: break-all; white-space: pre-wrap;
+}
+.metar-credit {
+  font-family: 'Inter', sans-serif; font-size: 11px;
+  color: var(--ink-lt); margin: 0 0 4px; text-align: right;
+}
+.metar-credit a { color: var(--bronze); text-decoration: none; }
+.metar-credit a:hover { text-decoration: underline; }
+
 .desc-block { padding: 12px 18px; border-bottom: 1px solid var(--border); }
 .desc-txt { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 400; line-height: 1.75; color: var(--ink-md); }
 .detail-footer { height: 20px; }

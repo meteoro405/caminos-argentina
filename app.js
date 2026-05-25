@@ -669,6 +669,119 @@ async function loadMar(d, lat, lng) {
     '</p>';
 }
 
+
+/* ── METAR (aviationweather.gov — NOAA/FAA) ─────────────── */
+async function loadMetar(d) {
+  const icao    = d.aeroIcao;
+  const blockId = 'metar_' + icao;
+  // Caché por hora: el METAR se actualiza cada ~30 min
+  const now     = new Date();
+  const hourKey = now.toISOString().slice(0,13);   // "2026-05-25T16"
+  const cacheKey = 'metar_' + icao + '_' + hourKey;
+
+  let m = null;
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) m = JSON.parse(cached);
+  } catch(e) {}
+
+  if (m === null) {
+    try {
+      const url = 'https://aviationweather.gov/api/data/metar?ids=' + icao + '&format=json';
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const arr = await res.json();
+      if (!arr || arr.length === 0) throw new Error('sin datos');
+      m = arr[0];
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(m)); } catch(e) {}
+    } catch(e) {
+      const el = document.getElementById(blockId);
+      if (el) el.style.display = 'none';
+      return;
+    }
+  }
+
+  const el = document.getElementById(blockId);
+  if (!el) return;
+
+  // ── Semáforo fltCat ──────────────────────────────────────
+  const catCfg = {
+    'VFR':  { emoji:'🟢', label:'VFR',  desc:'Condiciones buenas',     cls:'metar-vfr'  },
+    'MVFR': { emoji:'🟡', label:'MVFR', desc:'Condiciones marginales', cls:'metar-mvfr' },
+    'IFR':  { emoji:'🔴', label:'IFR',  desc:'Condiciones malas',      cls:'metar-ifr'  },
+    'LIFR': { emoji:'🔴', label:'LIFR', desc:'Condiciones muy malas',  cls:'metar-lifr' },
+  };
+  const cat = catCfg[m.fltCat] || { emoji:'⚪', label:m.fltCat||'—', desc:'Sin clasificación', cls:'metar-nd' };
+
+  // ── Viento ──────────────────────────────────────────────
+  function wdirToCard(deg) {
+    if (deg == null) return '—';
+    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+    return dirs[Math.round(deg / 22.5) % 16];
+  }
+  const wdir  = m.wdir != null ? wdirToCard(m.wdir) : '—';
+  const wspd  = m.wspd != null ? Math.round(m.wspd * 1.852) + ' km/h' : '—';
+  const wraw  = m.wdir != null ? `${wdir} ${wspd}` : '—';
+
+  // ── Visibilidad ─────────────────────────────────────────
+  const visKm = m.visib != null ? (m.visib * 1.609).toFixed(1) + ' km' : '—';
+
+  // ── Nubes ───────────────────────────────────────────────
+  const coverLabel = { FEW:'Pocas', SCT:'Dispersas', BKN:'Parciales', OVC:'Cubierto', CLR:'Despejado', SKC:'Despejado', NSC:'Sin nubes significativas', NCD:'Sin nubes detectadas' };
+  let nubesStr = '—';
+  if (m.clouds && m.clouds.length > 0) {
+    nubesStr = m.clouds
+      .map(c => {
+        const lbl = coverLabel[c.cover] || c.cover;
+        return c.base != null ? `${lbl} ${c.base}ft` : lbl;
+      })
+      .join(' · ');
+  } else if (m.cover) {
+    nubesStr = coverLabel[m.cover] || m.cover;
+  }
+
+  // ── Hora observación ────────────────────────────────────
+  let horaObs = '';
+  if (m.reportTime) {
+    try {
+      horaObs = new Date(m.reportTime).toLocaleTimeString('es-AR', {
+        hour:'2-digit', minute:'2-digit', hour12:false,
+        timeZone:'America/Argentina/Buenos_Aires'
+      }) + ' hs';
+    } catch(e) {}
+  }
+
+  // ── Humedad relativa aprox (Magnus formula) ──────────────
+  let humStr = '';
+  if (m.temp != null && m.dewp != null) {
+    const rh = Math.round(100 * Math.exp((17.625*m.dewp)/(243.04+m.dewp)) / Math.exp((17.625*m.temp)/(243.04+m.temp)));
+    humStr = rh + '%';
+  }
+
+  el.innerHTML =
+    `<div class="metar-header">` +
+      `<div class="metar-badge ${cat.cls}">${cat.emoji} ${cat.label} — ${cat.desc}</div>` +
+      (horaObs ? `<span class="metar-hora">${horaObs}</span>` : '') +
+    `</div>` +
+    `<div class="metar-grid">` +
+      (m.temp   != null ? `<div class="metar-item"><span class="metar-lbl">Temperatura</span><span class="metar-val">${m.temp}°C</span></div>` : '') +
+      (humStr           ? `<div class="metar-item"><span class="metar-lbl">Humedad</span><span class="metar-val">${humStr}</span></div>` : '') +
+      `<div class="metar-item"><span class="metar-lbl">Viento</span><span class="metar-val">${wraw}</span></div>` +
+      `<div class="metar-item"><span class="metar-lbl">Visibilidad</span><span class="metar-val">${visKm}</span></div>` +
+      (m.altim  != null ? `<div class="metar-item"><span class="metar-lbl">Presión</span><span class="metar-val">${m.altim} hPa</span></div>` : '') +
+      `<div class="metar-item metar-item-full"><span class="metar-lbl">Nubes</span><span class="metar-val">${nubesStr}</span></div>` +
+    `</div>` +
+    (m.rawOb ?
+      `<details class="metar-raw-wrap">` +
+        `<summary class="metar-raw-toggle">METAR raw</summary>` +
+        `<code class="metar-raw">${m.rawOb}</code>` +
+      `</details>` : '') +
+    `<p class="metar-credit">` +
+      `<a href="https://aviationweather.gov" target="_blank" rel="noopener">NOAA Aviation Weather</a>` +
+      ` · ${icao} · Actualización cada 30 min` +
+    `</p>`;
+}
+
 /* ── HIGHLIGHT ───────────────────────────────────────────── */
 function highlight(text, query) {
   if (!query || !text) return text||"";
@@ -1094,6 +1207,10 @@ function renderDetail(d) {
             `<svg width="15" height="15" viewBox="0 0 48 48"><path d="M24 4C16.27 4 10 10.27 10 18c0 10.5 14 26 14 26s14-15.5 14-26c0-7.73-6.27-14-14-14z" fill="#EA4335"/><circle cx="24" cy="18" r="5" fill="#fff"/></svg>` +
             `Ver en Google Maps</button>` : '') +
         `</div>` +
+        // METAR — condiciones meteorológicas del aeropuerto
+        (d.aeroIcao ? `<div class="metar-block" id="metar_${d.aeroIcao}">` +
+          `<div class="metar-loading">🛫 Cargando condiciones del aeropuerto…</div>` +
+        `</div>` : '') +
       `</div>`
     : '') +
 
@@ -1139,6 +1256,8 @@ function renderDetail(d) {
       if (d.esCostera) loadMar(d, lat, lng);
     }
   }
+  // METAR — no necesita coords, usa aeroIcao directamente
+  if (d.aeroIcao) loadMetar(d);
 }
 
 /* ── AMANECER / ATARDECER (sunrise-sunset.org) ───────────── */
