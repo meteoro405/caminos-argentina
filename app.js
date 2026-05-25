@@ -670,13 +670,13 @@ async function loadMar(d, lat, lng) {
 }
 
 
-/* ── METAR (aviationweather.gov — NOAA/FAA) ─────────────── */
+/* ── METAR (CheckWX API — CORS habilitado) ──────────────── */
 async function loadMetar(d) {
+  const CHECKWX_KEY = '27d70fc182ef4d169f9f202a8762a17b';
   const icao    = d.aeroIcao;
   const blockId = 'metar_' + icao;
-  // Caché por hora: el METAR se actualiza cada ~30 min
   const now     = new Date();
-  const hourKey = now.toISOString().slice(0,13);   // "2026-05-25T16"
+  const hourKey = now.toISOString().slice(0,13);   // caché por hora
   const cacheKey = 'metar_' + icao + '_' + hourKey;
 
   let m = null;
@@ -687,12 +687,12 @@ async function loadMetar(d) {
 
   if (m === null) {
     try {
-      const url = 'https://aviationweather.gov/api/data/metar?ids=' + icao + '&format=json';
-      const res = await fetch(url);
+      const url = 'https://api.checkwx.com/v2/metar/' + icao + '/decoded';
+      const res = await fetch(url, { headers: { 'X-API-Key': CHECKWX_KEY } });
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      const arr = await res.json();
-      if (!arr || arr.length === 0) throw new Error('sin datos');
-      m = arr[0];
+      const json = await res.json();
+      if (!json.data || json.data.length === 0) throw new Error('sin datos');
+      m = json.data[0];
       try { sessionStorage.setItem(cacheKey, JSON.stringify(m)); } catch(e) {}
     } catch(e) {
       const el = document.getElementById(blockId);
@@ -704,59 +704,79 @@ async function loadMetar(d) {
   const el = document.getElementById(blockId);
   if (!el) return;
 
-  // ── Semáforo fltCat ──────────────────────────────────────
+  // ── Semáforo flight_category ────────────────────────────
   const catCfg = {
-    'VFR':  { emoji:'🟢', label:'VFR',  desc:'Condiciones buenas',     cls:'metar-vfr'  },
-    'MVFR': { emoji:'🟡', label:'MVFR', desc:'Condiciones marginales', cls:'metar-mvfr' },
-    'IFR':  { emoji:'🔴', label:'IFR',  desc:'Condiciones malas',      cls:'metar-ifr'  },
-    'LIFR': { emoji:'🔴', label:'LIFR', desc:'Condiciones muy malas',  cls:'metar-lifr' },
+    'VFR':  { emoji:'🟢', label:'VFR',  desc:'Condiciones buenas',    cls:'metar-vfr'  },
+    'MVFR': { emoji:'🟡', label:'MVFR', desc:'Condiciones marginales',cls:'metar-mvfr' },
+    'IFR':  { emoji:'🔴', label:'IFR',  desc:'Condiciones malas',     cls:'metar-ifr'  },
+    'LIFR': { emoji:'🔴', label:'LIFR', desc:'Condiciones muy malas', cls:'metar-lifr' },
   };
-  const cat = catCfg[m.fltCat] || { emoji:'⚪', label:m.fltCat||'—', desc:'Sin clasificación', cls:'metar-nd' };
+  const fc  = m.flight_category || '';
+  const cat = catCfg[fc] || { emoji:'⚪', label: fc||'—', desc:'Sin clasificación', cls:'metar-nd' };
 
-  // ── Viento ──────────────────────────────────────────────
+  // ── Viento ───────────────────────────────────────────────
+  // CheckWX decoded: m.wind.degrees, m.wind.speed_kts, m.wind.gust_kts
   function wdirToCard(deg) {
     if (deg == null) return '—';
     const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
     return dirs[Math.round(deg / 22.5) % 16];
   }
-  const wdir  = m.wdir != null ? wdirToCard(m.wdir) : '—';
-  const wspd  = m.wspd != null ? Math.round(m.wspd * 1.852) + ' km/h' : '—';
-  const wraw  = m.wdir != null ? `${wdir} ${wspd}` : '—';
+  let wStr = '—';
+  if (m.wind) {
+    const dir  = m.wind.degrees != null ? wdirToCard(m.wind.degrees) : (m.wind.direction || '—');
+    const spd  = m.wind.speed_kts != null ? Math.round(m.wind.speed_kts * 1.852) + ' km/h' : '—';
+    const gust = m.wind.gust_kts  != null ? ' (ráfagas ' + Math.round(m.wind.gust_kts * 1.852) + ')' : '';
+    wStr = dir + ' ' + spd + gust;
+  }
 
-  // ── Visibilidad ─────────────────────────────────────────
-  const visKm = m.visib != null ? (m.visib * 1.609).toFixed(1) + ' km' : '—';
+  // ── Visibilidad ──────────────────────────────────────────
+  // CheckWX decoded: m.visibility.miles o m.visibility.meters
+  let visStr = '—';
+  if (m.visibility) {
+    if (m.visibility.meters != null) {
+      visStr = (m.visibility.meters >= 9999) ? '>10 km' : (m.visibility.meters / 1000).toFixed(1) + ' km';
+    } else if (m.visibility.miles != null) {
+      visStr = (m.visibility.miles * 1.609).toFixed(1) + ' km';
+    }
+  }
 
-  // ── Nubes ───────────────────────────────────────────────
-  const coverLabel = { FEW:'Pocas', SCT:'Dispersas', BKN:'Parciales', OVC:'Cubierto', CLR:'Despejado', SKC:'Despejado', NSC:'Sin nubes significativas', NCD:'Sin nubes detectadas' };
+  // ── Nubes ────────────────────────────────────────────────
+  // CheckWX decoded: m.clouds array con cover, base_feet_agl, text
+  const coverSP = { FEW:'Pocas', SCT:'Dispersas', BKN:'Parciales', OVC:'Cubierto',
+                    CLR:'Despejado', SKC:'Despejado', NSC:'Sin nubes sig.', NCD:'Despejado', CAVOK:'CAVOK' };
   let nubesStr = '—';
   if (m.clouds && m.clouds.length > 0) {
     nubesStr = m.clouds
-      .map(c => {
-        const lbl = coverLabel[c.cover] || c.cover;
-        return c.base != null ? `${lbl} ${c.base}ft` : lbl;
-      })
+      .map(c => (coverSP[c.code] || c.code) + (c.base_feet_agl != null ? ' ' + c.base_feet_agl + 'ft' : ''))
       .join(' · ');
-  } else if (m.cover) {
-    nubesStr = coverLabel[m.cover] || m.cover;
+  } else if (m.conditions && m.conditions.length > 0) {
+    // algunos METAR tienen CAVOK como condición
+    const cav = m.conditions.find(c => c.code === 'CAVOK');
+    if (cav) nubesStr = 'CAVOK (sin nubes significativas)';
   }
 
-  // ── Hora observación ────────────────────────────────────
+  // ── Temperatura y humedad ────────────────────────────────
+  // CheckWX decoded: m.temperature.celsius, m.dewpoint.celsius, m.humidity.percent
+  const tempStr = m.temperature && m.temperature.celsius != null ? m.temperature.celsius + '°C' : '—';
+  const humStr  = m.humidity    && m.humidity.percent    != null ? m.humidity.percent    + '%'  : '';
+
+  // ── Presión ──────────────────────────────────────────────
+  // CheckWX decoded: m.barometer.hpa
+  const presStr = m.barometer && m.barometer.hpa != null ? m.barometer.hpa + ' hPa' : '—';
+
+  // ── Hora observación ─────────────────────────────────────
   let horaObs = '';
-  if (m.reportTime) {
+  if (m.observed) {
     try {
-      horaObs = new Date(m.reportTime).toLocaleTimeString('es-AR', {
+      horaObs = new Date(m.observed).toLocaleTimeString('es-AR', {
         hour:'2-digit', minute:'2-digit', hour12:false,
         timeZone:'America/Argentina/Buenos_Aires'
       }) + ' hs';
     } catch(e) {}
   }
 
-  // ── Humedad relativa aprox (Magnus formula) ──────────────
-  let humStr = '';
-  if (m.temp != null && m.dewp != null) {
-    const rh = Math.round(100 * Math.exp((17.625*m.dewp)/(243.04+m.dewp)) / Math.exp((17.625*m.temp)/(243.04+m.temp)));
-    humStr = rh + '%';
-  }
+  // ── METAR raw ────────────────────────────────────────────
+  const rawOb = m.raw_text || '';
 
   el.innerHTML =
     `<div class="metar-header">` +
@@ -764,23 +784,17 @@ async function loadMetar(d) {
       (horaObs ? `<span class="metar-hora">${horaObs}</span>` : '') +
     `</div>` +
     `<div class="metar-grid">` +
-      (m.temp   != null ? `<div class="metar-item"><span class="metar-lbl">Temperatura</span><span class="metar-val">${m.temp}°C</span></div>` : '') +
-      (humStr           ? `<div class="metar-item"><span class="metar-lbl">Humedad</span><span class="metar-val">${humStr}</span></div>` : '') +
-      `<div class="metar-item"><span class="metar-lbl">Viento</span><span class="metar-val">${wraw}</span></div>` +
-      `<div class="metar-item"><span class="metar-lbl">Visibilidad</span><span class="metar-val">${visKm}</span></div>` +
-      (m.altim  != null ? `<div class="metar-item"><span class="metar-lbl">Presión</span><span class="metar-val">${m.altim} hPa</span></div>` : '') +
+      `<div class="metar-item"><span class="metar-lbl">Temperatura</span><span class="metar-val">${tempStr}</span></div>` +
+      (humStr ? `<div class="metar-item"><span class="metar-lbl">Humedad</span><span class="metar-val">${humStr}</span></div>` : '') +
+      `<div class="metar-item"><span class="metar-lbl">Viento</span><span class="metar-val">${wStr}</span></div>` +
+      `<div class="metar-item"><span class="metar-lbl">Visibilidad</span><span class="metar-val">${visStr}</span></div>` +
+      `<div class="metar-item"><span class="metar-lbl">Presión</span><span class="metar-val">${presStr}</span></div>` +
       `<div class="metar-item metar-item-full"><span class="metar-lbl">Nubes</span><span class="metar-val">${nubesStr}</span></div>` +
     `</div>` +
-    (m.rawOb ?
-      `<details class="metar-raw-wrap">` +
-        `<summary class="metar-raw-toggle">METAR raw</summary>` +
-        `<code class="metar-raw">${m.rawOb}</code>` +
-      `</details>` : '') +
-    `<p class="metar-credit">` +
-      `<a href="https://aviationweather.gov" target="_blank" rel="noopener">NOAA Aviation Weather</a>` +
-      ` · ${icao} · Actualización cada 30 min` +
-    `</p>`;
+    (rawOb ? `<details class="metar-raw-wrap"><summary class="metar-raw-toggle">METAR raw</summary><code class="metar-raw">${rawOb}</code></details>` : '') +
+    `<p class="metar-credit"><a href="https://www.checkwxapi.com" target="_blank" rel="noopener">CheckWX Aviation Weather</a> · ${icao} · Actualización cada 30 min</p>`;
 }
+
 
 /* ── HIGHLIGHT ───────────────────────────────────────────── */
 function highlight(text, query) {
