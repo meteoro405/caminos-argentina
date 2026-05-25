@@ -563,9 +563,13 @@ async function loadSismos(d, lat, lng) {
 
 /* ── CONDICIONES MARINAS (Open-Meteo Marine) ─────────────── */
 async function loadMar(d, lat, lng) {
+  // Usar coords marítimas específicas si existen (para rutas cuyo wazeSrc
+  // apunta a tierra firme o canal interior en vez del mar abierto)
+  const mLat = (d.marLat != null) ? d.marLat : lat;
+  const mLng = (d.marLng != null) ? d.marLng : lng;
   const blockId  = 'mar_' + d.nombre.replace(/[^a-z0-9]/gi,'_');
   const today    = new Date().toISOString().slice(0,10);
-  const cacheKey = 'mar_' + lat.toFixed(2) + '_' + lng.toFixed(2) + '_' + today;
+  const cacheKey = 'mar_' + mLat.toFixed(2) + '_' + mLng.toFixed(2) + '_' + today;
 
   let marData = null;
   try {
@@ -577,8 +581,8 @@ async function loadMar(d, lat, lng) {
     try {
       // Open-Meteo Marine — gratuita, sin key, CORS OK desde browser
       const url = 'https://marine-api.open-meteo.com/v1/marine' +
-                  '?latitude='  + lat.toFixed(4) +
-                  '&longitude=' + lng.toFixed(4) +
+                  '?latitude='  + mLat.toFixed(4) +
+                  '&longitude=' + mLng.toFixed(4) +
                   '&hourly=wave_height,wave_period,wind_wave_height,swell_wave_height' +
                   '&daily=wave_height_max' +
                   '&timezone=America%2FArgentina%2FBuenos_Aires' +

@@ -846,8 +846,9 @@ body {
 }
 .pn-icon {
   width: 270px;
-  height: 270px;
+  height: auto;        /* respeta el ratio original de cada escudo */
   max-width: 90vw;
+  max-height: 300px;   /* tope para escudos muy altos */
   object-fit: contain;
 }
 .master-icon {
