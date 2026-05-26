@@ -1,4 +1,4 @@
-const CACHE = 'caminos-ar-v81';
+const CACHE = 'caminos-ar-v82';
 
 /* Archivos que van a caché (app shell para offline) */
 const PRECACHE = [
