@@ -796,6 +796,123 @@ async function loadMetar(d) {
 }
 
 
+/* ── POI CERCANOS (Overpass / OpenStreetMap) ─────────────── */
+async function loadPOI(d, lat, lng) {
+  const blockId  = 'poi_' + d.nombre.replace(/[^a-z0-9]/gi,'_');
+  const today    = new Date().toISOString().slice(0,10);
+  const cacheKey = 'poi_' + lat.toFixed(2) + '_' + lng.toFixed(2) + '_' + today;
+
+  let poiData = null;
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) poiData = JSON.parse(cached);
+  } catch(e) {}
+
+  if (poiData === null) {
+    // Radio adaptado a la extensión de la ruta
+    const radio = (d.distancia_km && d.distancia_km > 150) ? 50000 : 30000;
+    const query =
+      '[out:json][timeout:20];(' +
+      'node["tourism"~"viewpoint|museum|attraction|camp_site|information"](around:' + radio + ',' + lat + ',' + lng + ');' +
+      'node["historic"~"ruins|monument"](around:' + radio + ',' + lat + ',' + lng + ');' +
+      'node["natural"="peak"]["name"](around:' + radio + ',' + lat + ',' + lng + ');' +
+      'node["amenity"~"fuel|restaurant|hospital"](around:' + radio + ',' + lat + ',' + lng + ');' +
+      'node["tourism"="hotel"](around:' + radio + ',' + lat + ',' + lng + ');' +
+      ');out body 60;';
+
+    try {
+      const res = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'data=' + encodeURIComponent(query),
+        signal: AbortSignal.timeout(12000)
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+
+      // Agrupar por categoría — solo elementos CON nombre
+      const cats = {
+        'miradores':   { emoji:'🏔', label:'Miradores',       items:[] },
+        'atractivos':  { emoji:'⭐', label:'Atractivos',       items:[] },
+        'museos':      { emoji:'🏛', label:'Museos',           items:[] },
+        'historico':   { emoji:'🏺', label:'Sitios históricos',items:[] },
+        'cumbres':     { emoji:'⛰', label:'Cumbres',           items:[] },
+        'combustible': { emoji:'⛽', label:'Combustible',      items:[] },
+        'alojamiento': { emoji:'🛏', label:'Alojamiento',      items:[] },
+        'camping':     { emoji:'🏕', label:'Campings',          items:[] },
+        'restaurant':  { emoji:'🍽', label:'Restaurantes',     items:[] },
+        'info':        { emoji:'ℹ', label:'Información',       items:[] },
+        'hospital':    { emoji:'🏥', label:'Salud',            items:[] },
+      };
+
+      (json.elements || []).forEach(el => {
+        const t = el.tags || {};
+        const name = t.name || t['name:es'] || '';
+        if (!name) return;   // descartar sin nombre
+        const item = { name, lat: el.lat, lon: el.lon };
+        const tv = t.tourism, av = t.amenity, hv = t.historic, nv = t.natural;
+        if      (tv === 'viewpoint')              cats.miradores.items.push(item);
+        else if (tv === 'museum')                 cats.museos.items.push(item);
+        else if (tv === 'attraction')             cats.atractivos.items.push(item);
+        else if (tv === 'camp_site')              cats.camping.items.push(item);
+        else if (tv === 'hotel')                  cats.alojamiento.items.push(item);
+        else if (tv === 'information')            cats.info.items.push(item);
+        else if (hv === 'ruins' || hv === 'monument') cats.historico.items.push(item);
+        else if (nv === 'peak')                   cats.cumbres.items.push(item);
+        else if (av === 'fuel')                   cats.combustible.items.push(item);
+        else if (av === 'restaurant')             cats.restaurant.items.push(item);
+        else if (av === 'hospital')               cats.hospital.items.push(item);
+        else if (av === 'hotel')                  cats.alojamiento.items.push(item);
+      });
+
+      // Guardar solo cats con resultados, máx 5 por cat
+      poiData = {};
+      Object.entries(cats).forEach(([k,v]) => {
+        if (v.items.length > 0)
+          poiData[k] = { emoji: v.emoji, label: v.label, items: v.items.slice(0,5) };
+      });
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(poiData)); } catch(e) {}
+    } catch(e) {
+      const el = document.getElementById(blockId);
+      if (el) el.style.display = 'none';
+      return;
+    }
+  }
+
+  const el = document.getElementById(blockId);
+  if (!el) return;
+
+  // Sin resultados con nombre → ocultar silenciosamente
+  const cats = Object.values(poiData);
+  if (cats.length === 0) {
+    el.style.display = 'none';
+    return;
+  }
+
+  // Construir HTML
+  const catHTML = cats.map(c =>
+    `<div class="poi-cat">` +
+      `<span class="poi-cat-title">${c.emoji} ${c.label}</span>` +
+      `<ul class="poi-list">` +
+        c.items.map(i =>
+          `<li class="poi-item">` +
+            `<a href="https://www.google.com/maps/search/?api=1&query=${i.lat},${i.lon}" ` +
+               `target="_blank" rel="noopener" class="poi-link">${i.name}</a>` +
+          `</li>`
+        ).join('') +
+      `</ul>` +
+    `</div>`
+  ).join('');
+
+  el.innerHTML =
+    `<div class="sec-title"><span class="sec-title-icon">📍</span>Cerca de esta ruta</div>` +
+    `<div class="poi-grid">${catHTML}</div>` +
+    `<p class="poi-credit">` +
+      `<a href="https://www.openstreetmap.org" target="_blank" rel="noopener">OpenStreetMap</a>` +
+      ` · Overpass API · Radio ${radio >= 50000 ? '50' : '30'} km` +
+    `</p>`;
+}
+
 /* ── HIGHLIGHT ───────────────────────────────────────────── */
 function highlight(text, query) {
   if (!query || !text) return text||"";
@@ -1228,6 +1345,11 @@ function renderDetail(d) {
       `</div>`
     : '') +
 
+    // POI cercanos (Overpass/OSM) — carga asíncrona, solo si hay coords
+    (d.wazeSrc ? `<div class="poi-block" id="poi_${d.nombre.replace(/[^a-z0-9]/gi,'_')}">` +
+      `<div class="poi-loading">📍 Buscando lugares cercanos…</div>` +
+    `</div>` : '') +
+
     `<div class="desc-block"><div class="sec-title"><span class="sec-title-icon">ℹ</span>Acerca de las ${tipoLabel}</div><p class="desc-txt">${desc}</p></div>` +
     `<div class="nav-footer">` +
       `<button class="nav-foot-btn prev-foot-btn" onclick="goPrevItem()">` +
@@ -1272,6 +1394,11 @@ function renderDetail(d) {
   }
   // METAR — no necesita coords, usa aeroIcao directamente
   if (d.aeroIcao) loadMetar(d);
+  // POI Overpass/OSM — solo si hay coords
+  if (d.wazeSrc) {
+    const mc2 = d.wazeSrc.match(/ll=(-?[\d.]+),(-?[\d.]+)/);
+    if (mc2) loadPOI(d, parseFloat(mc2[1]), parseFloat(mc2[2]));
+  }
 }
 
 /* ── AMANECER / ATARDECER (sunrise-sunset.org) ───────────── */
