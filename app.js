@@ -801,6 +801,8 @@ async function loadPOI(d, lat, lng) {
   const blockId  = 'poi_' + d.nombre.replace(/[^a-z0-9]/gi,'_');
   const today    = new Date().toISOString().slice(0,10);
   const cacheKey = 'poi_' + lat.toFixed(2) + '_' + lng.toFixed(2) + '_' + today;
+  // Radio definido en scope global de la función (no dentro del if)
+  const radio = 30000;
 
   let poiData = null;
   try {
@@ -809,8 +811,6 @@ async function loadPOI(d, lat, lng) {
   } catch(e) {}
 
   if (poiData === null) {
-    // Radio adaptado a la extensión de la ruta
-    const radio = (d.distancia_km && d.distancia_km > 150) ? 50000 : 30000;
     const query =
       '[out:json][timeout:20];(' +
       'node["tourism"~"viewpoint|museum|attraction|camp_site|information"](around:' + radio + ',' + lat + ',' + lng + ');' +
@@ -821,12 +821,13 @@ async function loadPOI(d, lat, lng) {
       ');out body 60;';
 
     try {
-      const res = await fetch('https://overpass-api.de/api/interpreter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'data=' + encodeURIComponent(query),
-        signal: AbortSignal.timeout(12000)
-      });
+      const ctrl = new AbortController();
+      const tid   = setTimeout(() => ctrl.abort(), 12000);
+      const res = await fetch(
+        'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query),
+        { signal: ctrl.signal }
+      );
+      clearTimeout(tid);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
 
@@ -909,7 +910,7 @@ async function loadPOI(d, lat, lng) {
     `<div class="poi-grid">${catHTML}</div>` +
     `<p class="poi-credit">` +
       `<a href="https://www.openstreetmap.org" target="_blank" rel="noopener">OpenStreetMap</a>` +
-      ` · Overpass API · Radio ${radio >= 50000 ? '50' : '30'} km` +
+      ` · Overpass API · Radio 30 km` +
     `</p>`;
 }
 
