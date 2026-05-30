@@ -990,6 +990,22 @@ function renderList() {
 /* ── DETAIL PANEL ────────────────────────────────────────── */
 function renderDetail(d) {
   currentDetail = d;
+
+  // ── Google Tag Manager — evento ruta_vista ───────────────
+  try {
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event:          'ruta_vista',
+      ruta_nombre:    d.nombre,
+      ruta_tipo:      d.tipo,
+      ruta_provincia: d.prov,
+      ruta_altitud:   d.alt  || 0,
+      ruta_dificultad:d.dif  || '',
+      ruta_superficie:d.sup  || '',
+    });
+  } catch(e) {}
+  // ──────────────────────────────────────────────────────────
+
   const det   = document.getElementById("detail");
   const color = TIPO_COLORS[d.tipo]||"#7A3A18";
   const desc  = TIPO_DESCS[d.tipo]||"";
@@ -1551,6 +1567,28 @@ async function loadSol(d, lat, lng) {
             '<span class="sol-label">Próxima fase</span>' +
             '<span class="sol-hora sol-duracion">' + lunaData.nextPhase + '</span>' +
           '</div>' : '') +
+        // Edad de la luna — días transcurridos desde la última luna nueva
+        // Ciclo lunar = 29.53 días. Se calcula a partir de la iluminación y la fase.
+        (() => {
+          let edadDias = null;
+          if (lunaData.fracIlum && lunaData.phase) {
+            const pct = parseFloat(lunaData.fracIlum) / 100;
+            const esCreciente = /creciente|waxing|nueva/i.test(lunaData.phase);
+            // iluminación = sin²(π/2 · fracción del ciclo)
+            // fracción del ciclo = arcsin(sqrt(pct)) * 2/π
+            const frac = esCreciente
+              ? Math.asin(Math.sqrt(pct)) / Math.PI * 2 * 0.5
+              : 1 - Math.asin(Math.sqrt(pct)) / Math.PI * 2 * 0.5;
+            edadDias = Math.round(frac * 29.53);
+          }
+          return edadDias !== null
+            ? '<div class="sol-item">' +
+                '<span class="sol-icono">🔢</span>' +
+                '<span class="sol-label">Edad de la luna</span>' +
+                '<span class="sol-hora sol-duracion">' + edadDias + ' días</span>' +
+              '</div>'
+            : '';
+        })() +
       '</div>';
   }
 
