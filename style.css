@@ -1441,3 +1441,88 @@ body {
   border: none;
   min-height: 500px;
 }
+
+/* ── OPEN-METEO BLOCK (UV, Aire, Clima histórico) ─────────── */
+.openmeteo-block {
+  border-top: 1px solid var(--border);
+  padding: 12px 18px 8px;
+}
+.om-loading {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; color: var(--ink-lt); padding: 6px 0;
+}
+.om-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+.om-card {
+  background: rgba(var(--accent-rgb, 160,100,50), 0.06);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.om-card-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  color: var(--ink-lt);
+}
+.om-card-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px; font-weight: 700;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.om-card-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; color: var(--ink-md);
+}
+/* Colores UV */
+.om-uv-bajo    { color: #4CAF50; }
+.om-uv-mod     { color: #FFC107; }
+.om-uv-alto    { color: #FF9800; }
+.om-uv-muyalto { color: #F44336; }
+.om-uv-extremo { color: #9C27B0; }
+/* Colores AQI */
+.om-aqi-bueno    { color: #4CAF50; }
+.om-aqi-regular  { color: #FFC107; }
+.om-aqi-malo     { color: #FF9800; }
+.om-aqi-muymalo  { color: #F44336; }
+.om-aqi-pesimo   { color: #9C27B0; }
+/* Dirección viento */
+.om-wind-arrow {
+  display: inline-block;
+  font-size: 16px;
+  transition: transform 0.3s;
+}
+/* Sección calidad aire */
+.om-section-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--bronze); margin: 10px 0 6px;
+  border-bottom: 1px solid var(--border); padding-bottom: 4px;
+}
+/* Selector mes historia */
+.om-mes-row {
+  display: flex; align-items: center; gap: 8px;
+  margin: 6px 0 8px;
+  flex-wrap: wrap;
+}
+.om-mes-select {
+  font-family: 'Inter', sans-serif; font-size: 12px;
+  padding: 4px 8px; border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg); color: var(--ink);
+  cursor: pointer;
+}
+.om-credit {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; color: var(--ink-lt);
+  margin: 4px 0 6px; text-align: right;
+}
+.om-credit a { color: var(--bronze); text-decoration: none; }
+.om-credit a:hover { text-decoration: underline; }

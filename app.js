@@ -926,6 +926,241 @@ async function loadPOI(d, lat, lng) {
     `</p>`;
 }
 
+
+/* ── OPEN-METEO: UV, CALIDAD DEL AIRE, CLIMA HISTÓRICO ─────── */
+async function loadOpenMeteo(d, lat, lng) {
+  const blockId  = 'om_' + d.nombre.replace(/[^a-z0-9]/gi,'_');
+  const el = document.getElementById(blockId);
+  if (!el) return;
+
+  const today    = new Date().toISOString().slice(0,10);
+  const tz       = 'America%2FArgentina%2FBuenos_Aires';
+  const cacheKey = 'om_' + lat.toFixed(2) + '_' + lng.toFixed(2) + '_' + today;
+
+  // ── helpers ──
+  function uvLabel(uv) {
+    if (uv === null) return { txt: 'S/D', cls: '' };
+    if (uv <= 2)  return { txt: 'Bajo',      cls: 'om-uv-bajo' };
+    if (uv <= 5)  return { txt: 'Moderado',  cls: 'om-uv-mod' };
+    if (uv <= 7)  return { txt: 'Alto',      cls: 'om-uv-alto' };
+    if (uv <= 10) return { txt: 'Muy alto',  cls: 'om-uv-muyalto' };
+    return              { txt: 'Extremo',    cls: 'om-uv-extremo' };
+  }
+  function uvProt(uv) {
+    if (uv === null || uv <= 2) return 'Sin protección necesaria';
+    if (uv <= 5)  return 'Protección recomendada';
+    if (uv <= 7)  return 'Protección necesaria · evitar mediodía';
+    if (uv <= 10) return 'Protección alta · sombra obligatoria';
+    return 'Protección máxima · evitar exposición';
+  }
+  function aqiLabel(aqi) {
+    if (aqi === null) return { txt: 'S/D', cls: '', emoji: '⚪' };
+    if (aqi <= 20)  return { txt: 'Muy bueno', cls: 'om-aqi-bueno',   emoji: '🟢' };
+    if (aqi <= 40)  return { txt: 'Bueno',     cls: 'om-aqi-bueno',   emoji: '🟢' };
+    if (aqi <= 60)  return { txt: 'Regular',   cls: 'om-aqi-regular', emoji: '🟡' };
+    if (aqi <= 80)  return { txt: 'Malo',      cls: 'om-aqi-malo',    emoji: '🟠' };
+    if (aqi <= 100) return { txt: 'Muy malo',  cls: 'om-aqi-muymalo', emoji: '🔴' };
+    return               { txt: 'Pésimo',     cls: 'om-aqi-pesimo',  emoji: '🟣' };
+  }
+  function windDir(deg) {
+    if (deg === null) return '—';
+    const dirs = ['N','NE','E','SE','S','SO','O','NO'];
+    return dirs[Math.round(deg/45) % 8];
+  }
+  function windArrow(deg) {
+    if (deg === null) return '';
+    return `<span class="om-wind-arrow" style="transform:rotate(${deg}deg)">↑</span> `;
+  }
+  function mesNombre(n) {
+    return ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+            'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][n-1] || '';
+  }
+
+  // ── fetch datos de hoy ──
+  let omData = null;
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) omData = JSON.parse(cached);
+  } catch(e) {}
+
+  if (!omData) {
+    try {
+      const ctrl = new AbortController();
+      const tid  = setTimeout(() => ctrl.abort(), 10000);
+
+      const [resF, resA] = await Promise.all([
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=uv_index_max,windspeed_10m_max,winddirection_10m_dominant,precipitation_probability_max&forecast_days=1&timezone=${tz}`, { signal: ctrl.signal }),
+        fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&hourly=european_aqi,pm2_5&forecast_days=1&timezone=${tz}`, { signal: ctrl.signal })
+      ]);
+      clearTimeout(tid);
+
+      const jF = resF.ok  ? await resF.json()  : null;
+      const jA = resA.ok  ? await resA.json()  : null;
+
+      const d0 = jF?.daily;
+      const aqiArr = jA?.hourly?.european_aqi || [];
+      const pm25   = jA?.hourly?.pm2_5        || [];
+      // promedio AQI horas diurnas (6h–20h)
+      const aqiDay = aqiArr.filter((_,i) => { const h = i % 24; return h >= 6 && h <= 20; });
+      const aqiAvg = aqiDay.length ? Math.round(aqiDay.reduce((a,b)=>a+(b||0),0)/aqiDay.length) : null;
+      const pm25Avg = pm25.filter((_,i)=>{ const h=i%24; return h>=6&&h<=20; });
+      const pm25Val = pm25Avg.length ? Math.round(pm25Avg.reduce((a,b)=>a+(b||0),0)/pm25Avg.length) : null;
+
+      omData = {
+        uv:     d0?.uv_index_max?.[0]            ?? null,
+        wind:   d0?.windspeed_10m_max?.[0]        ?? null,
+        windDg: d0?.winddirection_10m_dominant?.[0] ?? null,
+        rain:   d0?.precipitation_probability_max?.[0] ?? null,
+        aqi:    aqiAvg,
+        pm25:   pm25Val,
+      };
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(omData)); } catch(e) {}
+    } catch(e) {
+      el.style.display = 'none';
+      return;
+    }
+  }
+
+  // ── HTML bloque hoy ──
+  const uv  = uvLabel(omData.uv);
+  const aqi = aqiLabel(omData.aqi);
+
+  const htmlHoy =
+    `<div class="om-section-title">☀️ Condiciones hoy en la ruta</div>` +
+    `<div class="om-grid">` +
+      `<div class="om-card">` +
+        `<span class="om-card-label">Índice UV</span>` +
+        `<span class="om-card-value ${uv.cls}">${omData.uv !== null ? omData.uv.toFixed(1) : '—'}</span>` +
+        `<span class="om-card-sub">${uv.txt}</span>` +
+      `</div>` +
+      `<div class="om-card">` +
+        `<span class="om-card-label">Protección solar</span>` +
+        `<span class="om-card-value" style="font-size:13px;line-height:1.3">${uvProt(omData.uv)}</span>` +
+      `</div>` +
+      `<div class="om-card">` +
+        `<span class="om-card-label">Viento máx.</span>` +
+        `<span class="om-card-value">${windArrow(omData.windDg)}${omData.wind !== null ? Math.round(omData.wind)+' km/h' : '—'}</span>` +
+        `<span class="om-card-sub">del ${windDir(omData.windDg)}</span>` +
+      `</div>` +
+      `<div class="om-card">` +
+        `<span class="om-card-label">Prob. lluvia</span>` +
+        `<span class="om-card-value">${omData.rain !== null ? omData.rain+'%' : '—'}</span>` +
+      `</div>` +
+      `<div class="om-card">` +
+        `<span class="om-card-label">Calidad del aire</span>` +
+        `<span class="om-card-value ${aqi.cls}">${aqi.emoji} ${aqi.txt}</span>` +
+        `<span class="om-card-sub">AQI ${omData.aqi !== null ? omData.aqi : '—'}${omData.pm25 !== null ? ' · PM2.5 '+omData.pm25+' µg/m³' : ''}</span>` +
+      `</div>` +
+    `</div>`;
+
+  // ── Selector de mes para clima histórico ──
+  const now   = new Date();
+  const defMes = now.getMonth() + 1; // mes actual
+  const selId  = 'om_mes_' + d.nombre.replace(/[^a-z0-9]/gi,'_');
+  const omId   = blockId;
+
+  const htmlMes =
+    `<div class="om-section-title">📅 Clima histórico por mes</div>` +
+    `<div class="om-mes-row">` +
+      `<select class="om-mes-select" id="${selId}" onchange="loadOMHistorico('${omId}','${selId}',${lat},${lng})">` +
+        [1,2,3,4,5,6,7,8,9,10,11,12].map(m =>
+          `<option value="${m}"${m===defMes?' selected':''}>${mesNombre(m)}</option>`
+        ).join('') +
+      `</select>` +
+    `</div>` +
+    `<div id="${omId}_hist"><div class="om-loading">📊 Cargando promedios históricos…</div></div>`;
+
+  const htmlCredit =
+    `<p class="om-credit"><a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · datos libres</p>`;
+
+  el.innerHTML = htmlHoy + htmlMes + htmlCredit;
+
+  // cargar histórico del mes actual inmediatamente
+  loadOMHistorico(omId, selId, lat, lng);
+}
+
+/* ── OPEN-METEO: CLIMA HISTÓRICO MENSUAL ────────────────────── */
+async function loadOMHistorico(omId, selId, lat, lng) {
+  const selEl  = document.getElementById(selId);
+  const histEl = document.getElementById(omId + '_hist');
+  if (!selEl || !histEl) return;
+
+  const mes  = parseInt(selEl.value);
+  const year = new Date().getFullYear() - 1; // año anterior completo
+  const pad  = n => String(n).padStart(2,'0');
+  const dias = new Date(year, mes, 0).getDate();
+  const from = `${year}-${pad(mes)}-01`;
+  const to   = `${year}-${pad(mes)}-${pad(dias)}`;
+  const cKey = `om_hist_${lat.toFixed(2)}_${lng.toFixed(2)}_${year}_${mes}`;
+
+  let hist = null;
+  try {
+    const c = sessionStorage.getItem(cKey);
+    if (c) hist = JSON.parse(c);
+  } catch(e) {}
+
+  if (!hist) {
+    histEl.innerHTML = '<div class="om-loading">📊 Cargando…</div>';
+    try {
+      const ctrl = new AbortController();
+      const tid  = setTimeout(() => ctrl.abort(), 10000);
+      const res  = await fetch(
+        `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}` +
+        `&start_date=${from}&end_date=${to}` +
+        `&daily=temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum,windspeed_10m_max` +
+        `&timezone=America%2FArgentina%2FBuenos_Aires`,
+        { signal: ctrl.signal }
+      );
+      clearTimeout(tid);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const j = await res.json();
+      const dd = j.daily;
+      const avg = arr => arr && arr.length ? (arr.reduce((a,b)=>a+(b||0),0)/arr.filter(x=>x!==null).length) : null;
+      const sum = arr => arr && arr.length ? arr.reduce((a,b)=>a+(b||0),0) : null;
+      const max = arr => arr && arr.length ? Math.max(...arr.filter(x=>x!==null)) : null;
+      hist = {
+        tmax:  avg(dd.temperature_2m_max),
+        tmin:  avg(dd.temperature_2m_min),
+        tmean: avg(dd.temperature_2m_mean),
+        prec:  sum(dd.precipitation_sum),
+        vmax:  max(dd.windspeed_10m_max),
+      };
+      try { sessionStorage.setItem(cKey, JSON.stringify(hist)); } catch(e) {}
+    } catch(e) {
+      histEl.innerHTML = '<div class="om-loading">Sin datos históricos disponibles</div>';
+      return;
+    }
+  }
+
+  const r = v => v !== null ? Math.round(v*10)/10 : '—';
+  const meses = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                 'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  histEl.innerHTML =
+    `<div class="om-grid">` +
+      `<div class="om-card">` +
+        `<span class="om-card-label">Temp. media</span>` +
+        `<span class="om-card-value">${r(hist.tmean)}°C</span>` +
+        `<span class="om-card-sub">${meses[mes]} ${year}</span>` +
+      `</div>` +
+      `<div class="om-card">` +
+        `<span class="om-card-label">Temp. max / min</span>` +
+        `<span class="om-card-value">${r(hist.tmax)}° / ${r(hist.tmin)}°</span>` +
+        `<span class="om-card-sub">promedio diario</span>` +
+      `</div>` +
+      `<div class="om-card">` +
+        `<span class="om-card-label">Lluvia acumulada</span>` +
+        `<span class="om-card-value">${r(hist.prec)} mm</span>` +
+        `<span class="om-card-sub">total del mes</span>` +
+      `</div>` +
+      `<div class="om-card">` +
+        `<span class="om-card-label">Viento máx.</span>` +
+        `<span class="om-card-value">${r(hist.vmax)} km/h</span>` +
+        `<span class="om-card-sub">ráfaga mensual</span>` +
+      `</div>` +
+    `</div>`;
+}
+
 /* ── HIGHLIGHT ───────────────────────────────────────────── */
 function highlight(text, query) {
   if (!query || !text) return text||"";
@@ -1330,6 +1565,11 @@ function renderDetail(d) {
       `<div class="sismo-loading">🌎 Verificando actividad sísmica…</div>` +
     `</div>` : '') +
 
+    // Open-Meteo — UV, calidad del aire, clima histórico
+    (d.wazeSrc ? `<div class="openmeteo-block" id="om_${d.nombre.replace(/[^a-z0-9]/gi,'_')}">` +
+      `<div class="om-loading">🌤 Cargando datos ambientales…</div>` +
+    `</div>` : '') +
+
     // Paso Fronterizo (después del clima, antes de Acerca de)
     (d.pasoPf || d.horarioPf ?
       `<div class="pf-block">` +
@@ -1427,6 +1667,11 @@ function renderDetail(d) {
   if (d.wazeSrc) {
     const mc2 = d.wazeSrc.match(/ll=(-?[\d.]+),(-?[\d.]+)/);
     if (mc2) loadPOI(d, parseFloat(mc2[1]), parseFloat(mc2[2]));
+  }
+  // Open-Meteo — UV, calidad del aire, clima histórico
+  if (d.wazeSrc) {
+    const mc3 = d.wazeSrc.match(/ll=(-?[\d.]+),(-?[\d.]+)/);
+    if (mc3) loadOpenMeteo(d, parseFloat(mc3[1]), parseFloat(mc3[2]));
   }
 }
 
