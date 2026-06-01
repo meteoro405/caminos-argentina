@@ -187,25 +187,24 @@ searchClear.addEventListener("click", () => {
 
 /* ── MAPS MODAL ──────────────────────────────────────────── */
 function openMaps(nombre, prov, tipo, mapSrc, wazeSrc) {
-  // Extraer coords del wazeSrc si existe, o del mapSrc embed, o usar búsqueda por nombre
-  let url = '';
+  // Prioridad 1: mapSrc embed → convertir a URL de directions visible
+  // Cambiando /embed?pb= por /?pb= se abre la ruta completa en Google Maps
+  if (mapSrc && mapSrc.includes('google.com/maps/embed?pb=')) {
+    const url = mapSrc.replace('/maps/embed?pb=', '/maps?pb=');
+    window.open(url, '_blank', 'noopener');
+    return;
+  }
+  // Prioridad 2: wazeSrc → centrar el mapa en las coords con zoom de ruta
   if (wazeSrc) {
     const mw = wazeSrc.match(/ll=(-?[\d.]+),(-?[\d.]+)/);
     if (mw) {
-      url = `https://www.google.com/maps?q=${mw[1]},${mw[2]}&z=11`;
+      window.open(`https://www.google.com/maps/@${mw[1]},${mw[2]},13z`, '_blank', 'noopener');
+      return;
     }
   }
-  if (!url && mapSrc) {
-    const me = mapSrc.match(/!3d(-?[\d.]+).*?!2d(-?[\d.]+)/);
-    if (me) {
-      url = `https://www.google.com/maps?q=${me[1]},${me[2]}&z=11`;
-    }
-  }
-  if (!url) {
-    const q = encodeURIComponent((tipo==="RUTA ESCÉNICA"?"Ruta Escénica ":tipo+" ")+nombre+" "+prov+" Argentina");
-    url = `https://www.google.com/maps/search/${q}`;
-  }
-  window.open(url, '_blank', 'noopener');
+  // Fallback: búsqueda por nombre
+  const q = encodeURIComponent((tipo==="RUTA ESCÉNICA"?"Ruta Escénica ":tipo+" ")+nombre+" "+prov+" Argentina");
+  window.open(`https://www.google.com/maps/search/${q}`, '_blank', 'noopener');
 }
 function closeMaps(e) { if (e.target===document.getElementById("mapsModal")) closeMapsBtn(); }
 function closeMapsBtn() {
@@ -1545,6 +1544,11 @@ function renderDetail(d) {
       `</div>`
     : '') +
 
+    // Open-Meteo — UV, calidad del aire, clima histórico
+    (d.wazeSrc ? `<div class="openmeteo-block" id="om_${d.nombre.replace(/[^a-z0-9]/gi,'_')}">` +
+      `<div class="om-loading">🌤 Cargando datos ambientales…</div>` +
+    `</div>` : '') +
+
     // Sol (amanecer/atardecer) — carga asíncrona
     (d.wazeSrc ? `<div class="sol-block" id="sol_${d.nombre.replace(/[^a-z0-9]/gi,'_')}">` +
       `<div class="sol-loading">☀️ Cargando horarios del sol…</div>` +
@@ -1563,11 +1567,6 @@ function renderDetail(d) {
     // Sismos USGS — carga asíncrona
     (d.wazeSrc ? `<div class="sismo-block" id="sismo_${d.nombre.replace(/[^a-z0-9]/gi,'_')}">` +
       `<div class="sismo-loading">🌎 Verificando actividad sísmica…</div>` +
-    `</div>` : '') +
-
-    // Open-Meteo — UV, calidad del aire, clima histórico
-    (d.wazeSrc ? `<div class="openmeteo-block" id="om_${d.nombre.replace(/[^a-z0-9]/gi,'_')}">` +
-      `<div class="om-loading">🌤 Cargando datos ambientales…</div>` +
     `</div>` : '') +
 
     // Paso Fronterizo (después del clima, antes de Acerca de)
@@ -1655,6 +1654,7 @@ function renderDetail(d) {
     if (mc) {
       const lat = parseFloat(mc[1]);
       const lng = parseFloat(mc[2]);
+      loadOpenMeteo(d, lat, lng);
       loadSol(d, lat, lng);
       loadFirms(d, lat, lng);
       loadSismos(d, lat, lng);
@@ -1667,11 +1667,6 @@ function renderDetail(d) {
   if (d.wazeSrc) {
     const mc2 = d.wazeSrc.match(/ll=(-?[\d.]+),(-?[\d.]+)/);
     if (mc2) loadPOI(d, parseFloat(mc2[1]), parseFloat(mc2[2]));
-  }
-  // Open-Meteo — UV, calidad del aire, clima histórico
-  if (d.wazeSrc) {
-    const mc3 = d.wazeSrc.match(/ll=(-?[\d.]+),(-?[\d.]+)/);
-    if (mc3) loadOpenMeteo(d, parseFloat(mc3[1]), parseFloat(mc3[2]));
   }
 }
 
