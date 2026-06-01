@@ -186,25 +186,17 @@ searchClear.addEventListener("click", () => {
 });
 
 /* ── MAPS MODAL ──────────────────────────────────────────── */
-function openMaps(nombre, prov, tipo, mapSrc, wazeSrc) {
-  // Prioridad 1: mapSrc embed → convertir a URL de directions visible
-  // Cambiando /embed?pb= por /?pb= se abre la ruta completa en Google Maps
-  if (mapSrc && mapSrc.includes('google.com/maps/embed?pb=')) {
-    const url = mapSrc.replace('/maps/embed?pb=', '/maps?pb=');
-    window.open(url, '_blank', 'noopener');
-    return;
-  }
-  // Prioridad 2: wazeSrc → centrar el mapa en las coords con zoom de ruta
-  if (wazeSrc) {
-    const mw = wazeSrc.match(/ll=(-?[\d.]+),(-?[\d.]+)/);
-    if (mw) {
-      window.open(`https://www.google.com/maps/@${mw[1]},${mw[2]},13z`, '_blank', 'noopener');
-      return;
-    }
-  }
-  // Fallback: búsqueda por nombre
-  const q = encodeURIComponent((tipo==="RUTA ESCÉNICA"?"Ruta Escénica ":tipo+" ")+nombre+" "+prov+" Argentina");
-  window.open(`https://www.google.com/maps/search/${q}`, '_blank', 'noopener');
+function openMaps(nombre, prov, tipo, mapSrc) {
+  // Sistema original iframe+modal — funciona con las URLs embed de Google Maps
+  // que ya están en mapSrc (rutas) y aeroUbic (aeropuertos)
+  const src = mapSrc ||
+    "https://maps.google.com/maps?q=" +
+    encodeURIComponent((tipo==="RUTA ESCÉNICA"?"Ruta Escénica ":tipo+" ")+nombre+" "+prov+" Argentina") +
+    "&output=embed&hl=es";
+  document.getElementById("mapsFrame").src = src;
+  document.getElementById("mapsTitle").textContent = (tipo ? tipo+" " : "") + nombre + (prov ? " — "+prov : "");
+  document.getElementById("mapsModal").classList.add("open");
+  document.body.style.overflow = "hidden";
 }
 function closeMaps(e) { if (e.target===document.getElementById("mapsModal")) closeMapsBtn(); }
 function closeMapsBtn() {
@@ -1349,7 +1341,7 @@ function renderDetail(d) {
       `<div class="map-btns-row">` +
         (d.mapNoDisp
           ? `<div class="gmaps-btn gmaps-nodisp">📍 Ruta no disponible en Google Maps</div>`
-          : `<button class="gmaps-btn" onclick="openMaps('${esc(d.nombre)}','${esc(d.prov)}','${esc(d.tipo)}',${mapSrcJs},${d.wazeSrc ? `'${d.wazeSrc}'` : null})">` +
+          : `<button class="gmaps-btn" onclick="openMaps('${esc(d.nombre)}','${esc(d.prov)}','${esc(d.tipo)}',${mapSrcJs})">` +
               `<svg width="15" height="15" viewBox="0 0 48 48"><path d="M24 4C16.27 4 10 10.27 10 18c0 10.5 14 26 14 26s14-15.5 14-26c0-7.73-6.27-14-14-14z" fill="#EA4335"/><circle cx="24" cy="18" r="5" fill="#fff"/></svg>` +
               `Ver en Google Maps</button>` +
             (d.wazeSrc
