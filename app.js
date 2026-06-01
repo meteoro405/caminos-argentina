@@ -1185,7 +1185,7 @@ function renderList() {
     const k = itemKey(d);
     const isFav=!!favs[k], isDone=!!dones[k];
 
-    const difCls = d.dif==="BAJA"?"b-baja":d.dif==="MEDIA"?"b-media":d.dif==="ALTA"?"b-alta":"b-nd";
+    const difCls = d.dif==="BAJA"?"b-baja":d.dif==="MEDIA"?"b-media":(d.dif==="ALTA"||d.dif==="MUY ALTA")?"b-alta":"b-nd";
     const supBase = d.sup.split("/")[0];
     const supCls = supBase==="ASFALTO"?"b-asfalto":supBase==="RIPIO"?"b-ripio":supBase==="MIXTO"?"b-mixto":"b-nd";
     const difBadge = d.dif!=="—"?`<span class="badge ${difCls}">${d.dif}</span>`:"";
@@ -1251,7 +1251,7 @@ function renderDetail(d) {
   const favs = getFavs(), dones = getDones(), k = itemKey(d);
   const isFav=!!favs[k], isDone=!!dones[k];
 
-  const difColor = d.dif==="BAJA"?"var(--dif-baja)":d.dif==="MEDIA"?"var(--dif-media)":d.dif==="ALTA"?"#C0100A":"var(--ink-lt)";
+  const difColor = d.dif==="BAJA"?"var(--dif-baja)":d.dif==="MEDIA"?"var(--dif-media)":(d.dif==="ALTA"||d.dif==="MUY ALTA")?"#C0100A":"var(--ink-lt)";
   const supBase  = d.sup.split("/")[0];
   const supColor = supBase==="ASFALTO"?"#2A5A7A":supBase==="RIPIO"?"var(--ink-md)":supBase==="MIXTO"?"#5A3A7A":"var(--ink-lt)";
 
