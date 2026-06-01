@@ -1526,3 +1526,31 @@ body {
 }
 .om-credit a { color: var(--bronze); text-decoration: none; }
 .om-credit a:hover { text-decoration: underline; }
+
+/* ── PRECAUCIONES CON ÍCONOS ──────────────────────────────── */
+.prec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+.prec-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.4;
+}
+.prec-icon {
+  font-size: 17px;
+  line-height: 1.2;
+  flex-shrink: 0;
+  width: 22px;
+  text-align: center;
+}
+.prec-txt-item {
+  flex: 1;
+  padding-top: 1px;
+}

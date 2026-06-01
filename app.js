@@ -1226,6 +1226,61 @@ function renderList() {
 }
 
 /* ── DETAIL PANEL ────────────────────────────────────────── */
+
+/* ── PRECAUCIONES — renderizado con íconos por categoría ───── */
+function renderPrec(prec) {
+  if (!prec) return '';
+
+  // Mapeo: [palabras_clave, emoji]
+  const PREC_MAP = [
+    [['altura','4000','msnm','gran altitud','ruta en altura','camino a gran altitud'], '⛰️'],
+    [['sinuoso','curvas','angosto','montaña'], '〰️'],
+    [['hielo','helada'], '🧊'],
+    [['frio','frío','temperatura baj','temperaturas baj','invierno','frio intenso','frío intenso'], '🥶'],
+    [['calor','verano','temperatura alt','temperaturas alt','calor muy'], '🌡️'],
+    [['señal celular','sin señal','atencion señal'], '📵'],
+    [['animales salvajes'], '🐆'],
+    [['animales sueltos','cruce de animales','precaucion animales','animales en el'], '🐄'],
+    [['combustible','sin combustible'], '⛽'],
+    [['viento'], '💨'],
+    [['lluvia','barroso'], '🌧️'],
+    [['4x4','cuatro por cuatro','ideal vehiculo'], '🚙'],
+    [['ripio','tierra','arenoso','médanos','medanos'], '🪨'],
+    [['fuego','prohibicion'], '🔥'],
+    [['ciclistas','turistas caminando'], '🚶'],
+    [['agua','abrigo','comida','sin servicios'], '🎒'],
+  ];
+
+  function getEmoji(txt) {
+    const t = txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    for (const [kws, emoji] of PREC_MAP) {
+      for (const kw of kws) {
+        const k = kw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+        if (t.includes(k)) return emoji;
+      }
+    }
+    return '⚠️';
+  }
+
+  // Separar por \n (Alt+Enter) o " - " o " – "
+  let items;
+  if (prec.includes('\n')) {
+    items = prec.split('\n');
+  } else if (prec.includes(' - ') || prec.includes(' – ')) {
+    items = prec.split(/ [-–] /);
+  } else if (prec.includes(' -')) {
+    items = prec.split(' -');
+  } else {
+    items = [prec];
+  }
+
+  return items
+    .map(s => s.trim())
+    .filter(s => s && s !== '0')
+    .map(s => `<div class="prec-item"><span class="prec-icon">${getEmoji(s)}</span><span class="prec-txt-item">${s}</span></div>`)
+    .join('');
+}
+
 function renderDetail(d) {
   currentDetail = d;
 
@@ -1382,8 +1437,8 @@ function renderDetail(d) {
     // Mejor época
     (d.epoca ? `<div class="info-block epoca-block"><div class="sec-title"><span class="sec-title-icon">🗓</span>Mejor época</div><p class="info-txt epoca-txt">${d.epoca}</p></div>` : "") +
 
-    // Precauciones
-    (d.prec ? `<div class="info-block prec-block"><div class="sec-title">Precauciones</div><p class="info-txt prec-txt">⚠ ${d.prec}</p></div>` : "") +
+    // Precauciones — con íconos por categoría
+    (d.prec ? `<div class="info-block prec-block"><div class="sec-title">⚠️ Precauciones</div><div class="prec-list">${renderPrec(d.prec)}</div></div>` : "") +
 
     // Iconos
     `<div class="stats-grid icon-grid">` +
