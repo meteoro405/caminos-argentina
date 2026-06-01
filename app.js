@@ -186,14 +186,26 @@ searchClear.addEventListener("click", () => {
 });
 
 /* ── MAPS MODAL ──────────────────────────────────────────── */
-function openMaps(nombre, prov, tipo, mapSrc) {
-  const src = mapSrc || "https://maps.google.com/maps?q=" +
-    encodeURIComponent((tipo==="RUTA ESCÉNICA"?"Ruta Escénica ":tipo+" ")+nombre+" "+prov+" Argentina") +
-    "&output=embed&hl=es";
-  document.getElementById("mapsFrame").src = src;
-  document.getElementById("mapsTitle").textContent = tipo+" "+nombre+" — "+prov;
-  document.getElementById("mapsModal").classList.add("open");
-  document.body.style.overflow = "hidden";
+function openMaps(nombre, prov, tipo, mapSrc, wazeSrc) {
+  // Extraer coords del wazeSrc si existe, o del mapSrc embed, o usar búsqueda por nombre
+  let url = '';
+  if (wazeSrc) {
+    const mw = wazeSrc.match(/ll=(-?[\d.]+),(-?[\d.]+)/);
+    if (mw) {
+      url = `https://www.google.com/maps?q=${mw[1]},${mw[2]}&z=11`;
+    }
+  }
+  if (!url && mapSrc) {
+    const me = mapSrc.match(/!3d(-?[\d.]+).*?!2d(-?[\d.]+)/);
+    if (me) {
+      url = `https://www.google.com/maps?q=${me[1]},${me[2]}&z=11`;
+    }
+  }
+  if (!url) {
+    const q = encodeURIComponent((tipo==="RUTA ESCÉNICA"?"Ruta Escénica ":tipo+" ")+nombre+" "+prov+" Argentina");
+    url = `https://www.google.com/maps/search/${q}`;
+  }
+  window.open(url, '_blank', 'noopener');
 }
 function closeMaps(e) { if (e.target===document.getElementById("mapsModal")) closeMapsBtn(); }
 function closeMapsBtn() {
@@ -1103,7 +1115,7 @@ function renderDetail(d) {
       `<div class="map-btns-row">` +
         (d.mapNoDisp
           ? `<div class="gmaps-btn gmaps-nodisp">📍 Ruta no disponible en Google Maps</div>`
-          : `<button class="gmaps-btn" onclick="openMaps('${esc(d.nombre)}','${esc(d.prov)}','${esc(d.tipo)}',${mapSrcJs})">` +
+          : `<button class="gmaps-btn" onclick="openMaps('${esc(d.nombre)}','${esc(d.prov)}','${esc(d.tipo)}',${mapSrcJs},${d.wazeSrc ? `'${d.wazeSrc}'` : null})">` +
               `<svg width="15" height="15" viewBox="0 0 48 48"><path d="M24 4C16.27 4 10 10.27 10 18c0 10.5 14 26 14 26s14-15.5 14-26c0-7.73-6.27-14-14-14z" fill="#EA4335"/><circle cx="24" cy="18" r="5" fill="#fff"/></svg>` +
               `Ver en Google Maps</button>` +
             (d.wazeSrc
