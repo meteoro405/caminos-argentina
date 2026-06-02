@@ -1627,35 +1627,40 @@ body {
   display: flex;
 }
 .fuel-modal-box {
-  background: var(--bg);
+  background: linear-gradient(160deg, #3A1A06 0%, #5C2A0E 100%);
+  border: 2px solid var(--bronze-lt);
   border-radius: 16px;
   padding: 32px 28px 24px;
   max-width: 380px;
   width: 100%;
   text-align: center;
   position: relative;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+  box-shadow: 0 8px 48px rgba(0,0,0,0.65);
 }
 .fuel-modal-close {
   position: absolute; top: 12px; right: 14px;
   background: none; border: none;
   font-size: 18px; cursor: pointer;
-  color: var(--ink-lt);
+  color: var(--parch);
+  opacity: 0.7;
   line-height: 1;
+  transition: opacity 0.15s;
 }
+.fuel-modal-close:hover { opacity: 1; }
 .fuel-modal-icon { font-size: 48px; margin-bottom: 8px; }
 .fuel-modal-title {
   font-family: 'Playfair Display', serif;
   font-size: 22px;
-  color: var(--ink);
+  color: var(--parch);
   margin: 0 0 12px;
 }
 .fuel-modal-text {
   font-family: 'Inter', sans-serif;
   font-size: 14px;
-  color: var(--ink-md);
+  color: var(--parch-light);
   line-height: 1.6;
   margin: 0 0 20px;
+  opacity: 0.9;
 }
 .fuel-modal-btn {
   display: inline-block;
@@ -1667,14 +1672,15 @@ body {
   padding: 12px 28px;
   border-radius: 10px;
   text-decoration: none;
-  box-shadow: 0 2px 8px rgba(0,100,180,0.3);
+  box-shadow: 0 2px 8px rgba(0,100,180,0.4);
   transition: filter 0.15s;
 }
-.fuel-modal-btn:hover { filter: brightness(1.08); }
+.fuel-modal-btn:hover { filter: brightness(1.1); }
 .fuel-modal-sub {
   font-family: 'Inter', sans-serif;
   font-size: 11px;
-  color: var(--ink-lt);
+  color: var(--parch);
+  opacity: 0.55;
   margin: 10px 0 0;
 }
 /* FAB ahora es button, ajustar */

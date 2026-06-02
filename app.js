@@ -1409,7 +1409,9 @@ function renderDetail(d) {
               const mc = d.wazeSrc.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
               if (!mc) return '';
               const lat = mc[1], lng = mc[2];
-              const url = `https://www.google.com/maps/search/estaci%C3%B3n+de+nafta+combustible/@${lat},${lng},13z`;
+              // Usar Maps Places API URL con "near:" para anclar a las coords de la ruta
+              // y no a la ubicación del usuario aunque tenga GPS activo
+              const url = `https://www.google.com/maps/search/estaci%C3%B3n+de+servicio+nafta+near:${lat},${lng}/@${lat},${lng},12z`;
               return `<a class="estacion-btn" href="${url}" target="_blank" rel="noopener">⛽ Estaciones</a>`;
             })()
         ) +
