@@ -1554,3 +1554,26 @@ body {
   flex: 1;
   padding-top: 1px;
 }
+
+/* ── BOTÓN DONACIÓN COMBUSTIBLE ──────────────────────────── */
+.fuel-pill {
+  background: linear-gradient(135deg, #f5a623 0%, #e8891a 100%);
+  color: #1a0a00 !important;
+  font-weight: 700;
+  border: none;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(200,100,0,0.25);
+  transition: filter 0.15s, transform 0.1s;
+}
+.fuel-pill:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.fuel-pill:active {
+  transform: translateY(0);
+  filter: brightness(0.95);
+}
