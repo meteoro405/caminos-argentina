@@ -2039,6 +2039,17 @@ async function loadPerfil(d, slug) {
     '<text x="' + xSvg(0) + '" y="' + (ySvg(eles[0] || minE) - 5) + '" text-anchor="start" font-size="7" fill="#5A3A18">' + Math.round(eles[0] || minE) + 'm</text>' +
     '</svg>';
 
+  // Calcular pendiente máxima en grados
+  // distancia entre puntos consecutivos (en metros) = totalKm*1000/99
+  const segDistM = (totalKm * 1000) / 99;
+  let maxGrade = 0;
+  for (let i = 1; i < eles.length; i++) {
+    if (eles[i] === null || eles[i-1] === null) continue;
+    const dh = Math.abs(eles[i] - eles[i-1]);
+    const grad = Math.atan2(dh, segDistM) * 180 / Math.PI;
+    if (grad > maxGrade) maxGrade = grad;
+  }
+
   el.innerHTML =
     '<div class="sec-title">📈 Perfil altimétrico · ' + gpxData.distancia_km + ' km</div>' +
     '<div class="perfil-svg-wrap">' + svg + '</div>' +
@@ -2046,6 +2057,7 @@ async function loadPerfil(d, slug) {
       '<span>⬇ ' + Math.round(minE) + ' m</span>' +
       '<span>⬆ ' + Math.round(maxE) + ' m</span>' +
       '<span>↕ ' + Math.round(maxE - minE) + ' m desnivel</span>' +
+      (maxGrade > 0 ? '<span>📐 ' + maxGrade.toFixed(1) + '° pend. máx.</span>' : '') +
     '</div>' +
     '<p class="perfil-credit"><a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · SRTM</p>';
 }

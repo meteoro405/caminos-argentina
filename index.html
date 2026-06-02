@@ -82,7 +82,7 @@
       <div class="toolbar-sep"></div>
       <button class="pill random-pill" onclick="showRandom()">🎲 Al azar</button>
       <div class="toolbar-sep"></div>
-      <a class="pill fuel-pill" href="https://link.mercadopago.com.ar/decuestas" target="_blank" rel="noopener" title="Doná 1 litro de combustible para que la app siga rodando">⛽ Doná</a>
+      <button class="pill fuel-pill" onclick="document.getElementById('fuelModal').classList.add('open')" title="Doná 1 litro de combustible para que la app siga rodando">⛽ Doná</button>
     </div>
 
     <div class="main">
@@ -144,11 +144,31 @@
       });
     }
   </script>
-  <!-- Botón flotante donación — visible en mobile -->
-  <a class="fuel-fab" href="https://link.mercadopago.com.ar/decuestas"
-     target="_blank" rel="noopener" title="Doná 1 litro de combustible para que la app siga rodando">
-    ⛽
-  </a>
+  <!-- Modal donación -->
+  <div class="fuel-modal-overlay" id="fuelModal" onclick="closeFuelModal(event)">
+    <div class="fuel-modal-box">
+      <button class="fuel-modal-close" onclick="document.getElementById('fuelModal').classList.remove('open')">✕</button>
+      <div class="fuel-modal-icon">⛽</div>
+      <h2 class="fuel-modal-title">Doná 1 litro de combustible</h2>
+      <p class="fuel-modal-text">Esta app es gratuita, sin publicidad y se desarrolla en el tiempo libre de su autor.<br>Si te fue útil en algún viaje, podés contribuir con el equivalente a 1 litro de combustible para que siga rodando.</p>
+      <a class="fuel-modal-btn" href="https://link.mercadopago.com.ar/decuestas" target="_blank" rel="noopener" onclick="document.getElementById('fuelModal').classList.remove('open')">
+        Donar con MercadoPago
+      </a>
+      <p class="fuel-modal-sub">Monto libre · seguro · sin cuenta necesaria</p>
+    </div>
+  </div>
 
+  <!-- Botón flotante donación — visible en mobile -->
+  <button class="fuel-fab" onclick="document.getElementById('fuelModal').classList.add('open')"
+     title="Doná 1 litro de combustible para que la app siga rodando">
+    ⛽
+  </button>
+
+  <script>
+  function closeFuelModal(e) {
+    if (e.target === document.getElementById('fuelModal'))
+      document.getElementById('fuelModal').classList.remove('open');
+  }
+  </script>
 </body>
 </html>

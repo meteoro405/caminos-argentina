@@ -1612,3 +1612,74 @@ body {
     display: flex;
   }
 }
+
+/* ── MODAL DONACIÓN ────────────────────────────────────────── */
+.fuel-modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  z-index: 1100;
+  background: rgba(0,0,0,0.55);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.fuel-modal-overlay.open {
+  display: flex;
+}
+.fuel-modal-box {
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 32px 28px 24px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+}
+.fuel-modal-close {
+  position: absolute; top: 12px; right: 14px;
+  background: none; border: none;
+  font-size: 18px; cursor: pointer;
+  color: var(--ink-lt);
+  line-height: 1;
+}
+.fuel-modal-icon { font-size: 48px; margin-bottom: 8px; }
+.fuel-modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--ink);
+  margin: 0 0 12px;
+}
+.fuel-modal-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--ink-md);
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+.fuel-modal-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, #009ee3 0%, #007db5 100%);
+  color: white !important;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 12px 28px;
+  border-radius: 10px;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0,100,180,0.3);
+  transition: filter 0.15s;
+}
+.fuel-modal-btn:hover { filter: brightness(1.08); }
+.fuel-modal-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: var(--ink-lt);
+  margin: 10px 0 0;
+}
+/* FAB ahora es button, ajustar */
+button.fuel-fab {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
