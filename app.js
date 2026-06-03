@@ -980,7 +980,7 @@ async function loadOpenMeteo(d, lat, lng) {
       const tid  = setTimeout(() => ctrl.abort(), 10000);
 
       const [resF, resA] = await Promise.all([
-        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=uv_index_max,windspeed_10m_max,winddirection_10m_dominant,precipitation_probability_max&forecast_days=1&timezone=${tz}`, { signal: ctrl.signal }),
+        fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=uv_index_max,temperature_2m_max,temperature_2m_min,windspeed_10m_max,winddirection_10m_dominant,precipitation_probability_max&forecast_days=1&timezone=${tz}`, { signal: ctrl.signal }),
         fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&hourly=european_aqi,pm2_5&forecast_days=1&timezone=${tz}`, { signal: ctrl.signal })
       ]);
       clearTimeout(tid);
@@ -999,6 +999,8 @@ async function loadOpenMeteo(d, lat, lng) {
 
       omData = {
         uv:     d0?.uv_index_max?.[0]            ?? null,
+        tmax:   d0?.temperature_2m_max?.[0]       ?? null,
+        tmin:   d0?.temperature_2m_min?.[0]       ?? null,
         wind:   d0?.windspeed_10m_max?.[0]        ?? null,
         windDg: d0?.winddirection_10m_dominant?.[0] ?? null,
         rain:   d0?.precipitation_probability_max?.[0] ?? null,
@@ -1041,6 +1043,12 @@ async function loadOpenMeteo(d, lat, lng) {
         `<span class="om-card-label">Calidad del aire</span>` +
         `<span class="om-card-value ${aqi.cls}">${aqi.emoji} ${aqi.txt}</span>` +
         `<span class="om-card-sub">AQI ${omData.aqi !== null ? omData.aqi : '—'}${omData.pm25 !== null ? ' · PM2.5 '+omData.pm25+' µg/m³' : ''}</span>` +
+      `</div>` +
+      `<div class="om-card">` +
+        `<span class="om-card-label">Temperatura</span>` +
+        `<span class="om-card-value">${omData.tmax !== null ? Math.round(omData.tmax)+'°' : '—'}` +
+          `<span style="font-size:13px;color:var(--ink-lt)"> / ${omData.tmin !== null ? Math.round(omData.tmin)+'°' : '—'}</span></span>` +
+        `<span class="om-card-sub">máx / mín del día</span>` +
       `</div>` +
     `</div>`;
 
@@ -1399,12 +1407,7 @@ function renderDetail(d) {
           : `<button class="gmaps-btn" onclick="openMaps('${esc(d.nombre)}','${esc(d.prov)}','${esc(d.tipo)}',${mapSrcJs})">` +
               `<svg width="15" height="15" viewBox="0 0 48 48"><path d="M24 4C16.27 4 10 10.27 10 18c0 10.5 14 26 14 26s14-15.5 14-26c0-7.73-6.27-14-14-14z" fill="#EA4335"/><circle cx="24" cy="18" r="5" fill="#fff"/></svg>` +
               `Ver en Google Maps</button>` +
-            (d.wazeSrc
-              ? `<a class="waze-btn" href="${d.wazeSrc}" target="_blank" rel="noopener">` +
-                  `<svg width="15" height="15" viewBox="0 0 48 48" fill="none"><ellipse cx="24" cy="26" rx="18" ry="16" fill="#33CCFF"/><circle cx="17" cy="30" r="3" fill="#fff"/><circle cx="31" cy="30" r="3" fill="#fff"/><path d="M17 22 Q24 16 31 22" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="33" cy="12" r="5" fill="#FF6B00"/></svg>` +
-                  `Abrir en Waze</a>`
-              : '') +
-            (() => {
+                        (() => {
               if (!d.wazeSrc) return '';
               const mc = d.wazeSrc.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
               if (!mc) return '';
@@ -1417,7 +1420,7 @@ function renderDetail(d) {
         ) +
       `</div>` +
       (!d.mapImgHidden ? mapImg('', `Mapa de ${d.nombre}`, d.mapImg||null) : "") +
-      (d.hasMap2 ? mapImg('_2', `Mapa 2 de ${d.nombre}`, d.mapImg2||null) : "") +
+      (d.hasMap2 ? '<div class="map-sep"></div>' + mapImg('_2', `Mapa 2 de ${d.nombre}`, d.mapImg2||null) : "") +
     `</div>` +
 
     // Galería — usa foto1/foto2 explícitos si existen, si no cae al slug
@@ -2042,14 +2045,17 @@ async function loadPerfil(d, slug) {
     '</svg>';
 
   // Calcular pendiente máxima en grados
-  // distancia entre puntos consecutivos (en metros) = totalKm*1000/99
+  // Usa ventana de 3 puntos para suavizar artefactos del SRTM (~90m resolución)
+  // y clampea a 20° (máximo físico de una ruta vehicular real)
   const segDistM = (totalKm * 1000) / 99;
+  const segDist3 = segDistM * 2; // distancia acumulada de 3 puntos
   let maxGrade = 0;
-  for (let i = 1; i < eles.length; i++) {
-    if (eles[i] === null || eles[i-1] === null) continue;
-    const dh = Math.abs(eles[i] - eles[i-1]);
-    const grad = Math.atan2(dh, segDistM) * 180 / Math.PI;
-    if (grad > maxGrade) maxGrade = grad;
+  for (let i = 2; i < eles.length; i++) {
+    if (eles[i] === null || eles[i-2] === null) continue;
+    const dh = Math.abs(eles[i] - eles[i-2]);
+    const grad = Math.atan2(dh, segDist3) * 180 / Math.PI;
+    const gradClamped = Math.min(grad, 20); // cap físico: ninguna ruta vehicular supera 20°
+    if (gradClamped > maxGrade) maxGrade = gradClamped;
   }
 
   el.innerHTML =

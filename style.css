@@ -1723,3 +1723,8 @@ button.fuel-fab {
 .install-btn[style*="flex"] {
   animation: install-bounce 0.4s ease forwards;
 }
+
+/* ── SEPARADOR ENTRE MAPA 1 Y MAPA 2 ─────────────────────── */
+.map-sep {
+  height: 18px;
+}
