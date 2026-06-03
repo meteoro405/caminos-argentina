@@ -1728,3 +1728,40 @@ button.fuel-fab {
 .map-sep {
   height: 18px;
 }
+
+/* ── SEMÁFORO PASO FRONTERIZO ───────────────────────────────── */
+.pf-status-wrap {
+  margin: 8px 0 4px;
+}
+.pf-semaforo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+.pf-abierto {
+  background: rgba(76,175,80,0.15);
+  color: #2e7d32;
+  border: 1.5px solid rgba(76,175,80,0.4);
+}
+.pf-cerrado {
+  background: rgba(211,47,47,0.12);
+  color: #c62828;
+  border: 1.5px solid rgba(211,47,47,0.35);
+}
+.pf-cerrado-siempre {
+  background: rgba(100,100,100,0.1);
+  color: var(--ink-md);
+  border: 1.5px solid var(--border);
+  font-weight: 600;
+}
+.pf-countdown {
+  font-weight: 400;
+  font-size: 13px;
+  opacity: 0.85;
+}
