@@ -1689,3 +1689,37 @@ button.fuel-fab {
   cursor: pointer;
   font-family: inherit;
 }
+
+/* ── BOTÓN INSTALACIÓN PWA ───────────────────────────────── */
+.install-btn {
+  display: none; /* JS lo muestra cuando corresponde */
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1.5px solid var(--bronze-lt);
+  background: rgba(200,132,90,0.12);
+  color: var(--parch);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, border-color 0.15s;
+  margin-left: 4px;
+}
+.install-btn:hover {
+  background: rgba(200,132,90,0.25);
+  border-color: var(--parch);
+  transform: translateY(-1px);
+}
+.install-btn:active {
+  transform: translateY(0) scale(0.95);
+}
+/* Pequeña animación de rebote al aparecer */
+@keyframes install-bounce {
+  0%   { opacity: 0; transform: translateY(-4px); }
+  60%  { transform: translateY(2px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.install-btn[style*="flex"] {
+  animation: install-bounce 0.4s ease forwards;
+}
