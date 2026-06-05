@@ -210,6 +210,7 @@ document.addEventListener("keydown", e => { if (e.key==="Escape") closeMapsBtn()
 function getFiltered() {
   const favs = getFavs(), dones = getDones();
   return DATA.filter(d => {
+    if (d.hidden) return false;
     const matchTipo = searchQuery ? true : (activeTipo==="TODOS" || d.tipo===activeTipo);
     let matchSearch = true;
     if (searchQuery) {
@@ -917,152 +918,6 @@ async function loadPOI(d, lat, lng) {
     `</p>`;
 }
 
-
-
-/* ── SEMÁFORO PASO FRONTERIZO ───────────────────────────────── */
-function loadPFStatus(d) {
-  const elId = 'pfstatus_' + d.nombre.replace(/[^a-z0-9]/gi,'_');
-  const el   = document.getElementById(elId);
-  if (!el) return;
-
-  const raw = (d.horarioPf || '').trim();
-
-  // ── Casos especiales ──────────────────────────────────────
-  if (/cerrado para particulares/i.test(raw)) {
-    el.innerHTML = '<div class="pf-semaforo pf-cerrado-siempre">🔴 Cerrado para particulares</div>';
-    return;
-  }
-  if (/ver estado actual/i.test(raw) || /^\s*$/.test(raw)) {
-    return; // ya tiene el botón de link, no mostrar semáforo
-  }
-  if (/abierto las 24/i.test(raw)) {
-    el.innerHTML = '<div class="pf-semaforo pf-abierto">🟢 ABIERTO · 24 horas</div>';
-    return;
-  }
-
-  // ── Parser de horarios ────────────────────────────────────
-  // Detecta bloques por mes y/o día del tipo:
-  //   "Abril a Noviembre: 08:00 a 20:00 horas."
-  //   "Lunes a viernes de 08:00 a 12:00 y de 14:00 a 20:00 horas."
-  //   "Sábados de 10:00 a 12:00 y de 16:00 a 18:00 horas."
-  //   "Domingos CERRADO"
-  //   "Lunes a domingo de 09:00 a 19:30 horas."
-
-  const MESES = ['enero','febrero','marzo','abril','mayo','junio',
-                 'julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  const DIAS  = ['domingo','lunes','martes','miércoles','miercoles',
-                 'jueves','viernes','sábado','sabado'];
-
-  function toMin(hh, mm) { return parseInt(hh)*60 + parseInt(mm); }
-
-  // Extraer rangos HH:MM a HH:MM del texto
-  function parseRangos(txt) {
-    const rangos = [];
-    const re = /(\d{1,2}):(\d{2})\s+a\s+(\d{1,2}):(\d{2})/g;
-    let m;
-    while ((m = re.exec(txt)) !== null) {
-      rangos.push({ open: toMin(m[1],m[2]), close: toMin(m[3],m[4]) });
-    }
-    return rangos;
-  }
-
-  // Verificar si el texto de un bloque aplica al mes actual
-  function mesAplica(txt) {
-    const t = txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    const mesNow = new Date().getMonth(); // 0=enero
-    const mRango = /([a-z]+)\s+a\s+([a-z]+)\s*:/i.exec(t);
-    if (!mRango) return true; // sin restricción de mes → aplica siempre
-    const desde = MESES.findIndex(m => t.startsWith(m) ||
-      m.normalize('NFD').replace(/[\u0300-\u036f]/g,'') === mRango[1].normalize('NFD').replace(/[\u0300-\u036f]/g,''));
-    const hasta = MESES.findIndex(m =>
-      m.normalize('NFD').replace(/[\u0300-\u036f]/g,'') === mRango[2].normalize('NFD').replace(/[\u0300-\u036f]/g,''));
-    if (desde < 0 || hasta < 0) return true;
-    if (desde <= hasta) return mesNow >= desde && mesNow <= hasta;
-    return mesNow >= desde || mesNow <= hasta; // cruza año
-  }
-
-  // Verificar si el texto aplica al día de semana actual
-  function diaAplica(txt) {
-    const t = txt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    const diaNow = new Date().getDay(); // 0=domingo
-    // "Domingos CERRADO"
-    if (/domingos?\s+cerrado/i.test(txt)) return diaNow === 0 ? 'cerrado' : false;
-    // "Lunes a domingo" → todos los días
-    if (/lunes\s+a\s+domingo/.test(t)) return true;
-    // "Lunes a viernes"
-    if (/lunes\s+a\s+viernes/.test(t)) return diaNow >= 1 && diaNow <= 5;
-    // "Sábados" o "Sabados"
-    if (/s[aá]bados?/.test(t) && !/lunes/.test(t)) return diaNow === 6;
-    // "Domingos"
-    if (/domingos?/.test(t) && !/lunes/.test(t)) return diaNow === 0;
-    return true; // sin restricción de día
-  }
-
-  // Dividir en líneas/bloques por \n y analizar cada uno
-  const bloques = raw.split(/\n/);
-  const now = new Date();
-  const minNow = now.getHours()*60 + now.getMinutes();
-
-  let abierto = false;
-  let cierraEn = null; // minutos hasta el próximo cierre
-  let abreEn   = null; // minutos hasta la próxima apertura
-  let todayHasSchedule = false;
-
-  for (const bloque of bloques) {
-    if (!mesAplica(bloque)) continue;
-    const dia = diaAplica(bloque);
-    if (dia === 'cerrado') { todayHasSchedule = true; continue; }
-    if (!dia) continue;
-
-    const rangos = parseRangos(bloque);
-    if (rangos.length === 0) continue;
-    todayHasSchedule = true;
-
-    for (const r of rangos) {
-      if (minNow >= r.open && minNow < r.close) {
-        abierto = true;
-        const mins = r.close - minNow;
-        if (cierraEn === null || mins < cierraEn) cierraEn = mins;
-      } else if (minNow < r.open) {
-        const mins = r.open - minNow;
-        if (abreEn === null || mins < abreEn) abreEn = mins;
-      } else {
-        // ya cerró en este rango, buscar apertura del día siguiente
-        const minsNext = (24*60 - minNow) + r.open;
-        if (abreEn === null || minsNext < abreEn) abreEn = minsNext;
-      }
-    }
-  }
-
-  function fmtTiempo(mins) {
-    const h = Math.floor(mins/60);
-    const m = mins % 60;
-    if (h > 0 && m > 0) return `${h} h ${m} min`;
-    if (h > 0)           return `${h} h`;
-    return `${m} min`;
-  }
-
-  if (!todayHasSchedule) {
-    el.innerHTML = '<div class="pf-semaforo pf-cerrado">🔴 CERRADO hoy</div>';
-    return;
-  }
-
-  if (abierto) {
-    const extra = cierraEn !== null
-      ? `<span class="pf-countdown"> · Cierra en ${fmtTiempo(cierraEn)}</span>` : '';
-    el.innerHTML = `<div class="pf-semaforo pf-abierto">🟢 ABIERTO${extra}</div>`;
-  } else {
-    const extra = abreEn !== null
-      ? `<span class="pf-countdown"> · Abre en ${fmtTiempo(abreEn)}</span>` : '';
-    el.innerHTML = `<div class="pf-semaforo pf-cerrado">🔴 CERRADO${extra}</div>`;
-  }
-
-  // Actualizar cada minuto mientras el panel esté visible
-  const timer = setInterval(() => {
-    if (!document.getElementById(elId)) { clearInterval(timer); return; }
-    loadPFStatus(d);
-  }, 60000);
-}
 
 /* ── OPEN-METEO: UV, CALIDAD DEL AIRE, CLIMA HISTÓRICO ─────── */
 async function loadOpenMeteo(d, lat, lng) {
@@ -1778,8 +1633,7 @@ function renderDetail(d) {
           return `<p class="pf-txt pf-nombre pf-nombre-grande">${pfFirst}</p>` +
                  (pfRest ? `<p class="pf-txt pf-ciudades">${pfRest}</p>` : '');
         })() : '') +
-        (d.horarioPf ? `<p class="pf-txt pf-horario">🕐 ${d.horarioPf.replace(/\n/g,'<br>')}</p>` : '') +
-        `<div class="pf-status-wrap" id="pfstatus_${d.nombre.replace(/[^a-z0-9]/gi,'_')}"></div>` +
+        (d.horarioPf? `<p class="pf-txt pf-horario">🕐 ${d.horarioPf.replace(/\n/g,'<br>')}</p>` : '') +
         (d.urlPf ?
           `<a href="${d.urlPf}" target="_blank" rel="noopener" class="pf-btn">` +
             `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">` +
@@ -1846,9 +1700,6 @@ function renderDetail(d) {
 
   // Cargar perfil altimétrico si hay GPX
   loadPerfil(d, slug);
-
-  // Semáforo paso fronterizo — solo si tiene horario parseable
-  if (d.horarioPf) loadPFStatus(d);
 
   // Cargar amanecer/atardecer e incendios si hay coords
   if (d.wazeSrc) {
@@ -2647,8 +2498,9 @@ function initMapaIgn() {
     }
   ).addTo(mapaIgnInstance);
 
-  // Agregar marcadores de todas las rutas con coords
+  // Agregar marcadores de todas las rutas con coords (excluir ocultas)
   DATA.forEach(d => {
+    if (d.hidden) return;
     if (!d.wazeSrc) return;
     const m = d.wazeSrc.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
     if (!m) return;
