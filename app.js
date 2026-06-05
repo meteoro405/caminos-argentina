@@ -1633,6 +1633,7 @@ function renderDetail(d) {
           return `<p class="pf-txt pf-nombre pf-nombre-grande">${pfFirst}</p>` +
                  (pfRest ? `<p class="pf-txt pf-ciudades">${pfRest}</p>` : '');
         })() : '') +
+        (d.horarioPf ? `<div id="pfstatus_${d.nombre.replace(/[^a-z0-9]/gi,'_')}" class="pf-status"></div>` : '') +
         (d.horarioPf? `<p class="pf-txt pf-horario">🕐 ${d.horarioPf.replace(/\n/g,'<br>')}</p>` : '') +
         (d.urlPf ?
           `<a href="${d.urlPf}" target="_blank" rel="noopener" class="pf-btn">` +
@@ -1698,6 +1699,9 @@ function renderDetail(d) {
     }, 150);
   }
 
+  // Cargar semáforo de paso fronterizo
+  if (d.horarioPf) loadPFStatus(d);
+
   // Cargar perfil altimétrico si hay GPX
   loadPerfil(d, slug);
 
@@ -1721,6 +1725,134 @@ function renderDetail(d) {
     const mc2 = d.wazeSrc.match(/ll=(-?[\d.]+),(-?[\d.]+)/);
     if (mc2) loadPOI(d, parseFloat(mc2[1]), parseFloat(mc2[2]));
   }
+}
+
+/* ── SEMÁFORO PASO FRONTERIZO ────────────────────────────── */
+function loadPFStatus(d) {
+  if (!d.horarioPf) return;
+  const slug    = d.nombre.replace(/[^a-z0-9]/gi, '_');
+  const blockId = 'pfstatus_' + slug;
+  const el      = document.getElementById(blockId);
+  if (!el) return;
+
+  // Limpia interval previo si se reabre la misma ruta
+  if (el._pfInterval) clearInterval(el._pfInterval);
+
+  function hhmm(h, m) { return h * 60 + m; }
+
+  function parseRangos(txt) {
+    // Extrae pares [{desde, hasta}] en minutos desde medianoche
+    const rangos = [];
+    const re = /(\d{1,2}):(\d{2})\s*[aA]\s*(\d{1,2}):(\d{2})/g;
+    let m;
+    while ((m = re.exec(txt)) !== null) {
+      rangos.push({ desde: hhmm(+m[1], +m[2]), hasta: hhmm(+m[3], +m[4]) });
+    }
+    return rangos;
+  }
+
+  function mesAplica(txt) {
+    // Detecta restricción de meses. Si existe y el mes actual no está, retorna false.
+    const MESES = ['enero','febrero','marzo','abril','mayo','junio',
+                   'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const re = /([a-záéíóúü]+)\s+a\s+([a-záéíóúü]+)\s*:/i;
+    const m  = re.exec(txt);
+    if (!m) return true; // sin restricción de mes
+    const mesDesde = MESES.indexOf(m[1].toLowerCase());
+    const mesHasta = MESES.indexOf(m[2].toLowerCase());
+    if (mesDesde === -1 || mesHasta === -1) return true;
+    const mesHoy = new Date().getMonth(); // 0-based
+    if (mesDesde <= mesHasta) {
+      return mesHoy >= mesDesde && mesHoy <= mesHasta;
+    } else {
+      // rango que cruza año: ej. Noviembre a Marzo
+      return mesHoy >= mesDesde || mesHoy <= mesHasta;
+    }
+  }
+
+  function diaAplica(linea) {
+    // Retorna true si la línea aplica al día de hoy
+    const DIAS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+    const diaHoy = new Date().getDay(); // 0=dom
+    const l = linea.toLowerCase();
+    if (/lunes\s+a\s+domingo/i.test(l))  return true;
+    if (/lunes\s+a\s+viernes/i.test(l))  return diaHoy >= 1 && diaHoy <= 5;
+    if (/sábados?/i.test(l) && !/domingo/i.test(l)) return diaHoy === 6;
+    if (/domingos?/i.test(l) && !/sábado/i.test(l)) return diaHoy === 0;
+    if (/sábados?\s+y\s+domingos?/i.test(l)) return diaHoy === 0 || diaHoy === 6;
+    // Si la línea menciona "CERRADO" sin restricción de día, aplica siempre
+    if (/cerrado/i.test(l)) return true;
+    return true; // sin restricción reconocida → aplica
+  }
+
+  function render() {
+    const txt = d.horarioPf;
+
+    // Casos especiales: siempre abierto o siempre cerrado
+    if (/abierto\s+las\s+24/i.test(txt)) {
+      el.innerHTML = `<span class="pf-abierto">🟢 ABIERTO · 24 hs</span>`;
+      return;
+    }
+    if (/cerrado\s+para\s+particulares/i.test(txt)) {
+      el.innerHTML = `<span class="pf-cerrado-siempre">⚫ CERRADO PARA PARTICULARES</span>`;
+      return;
+    }
+    if (/ver\s+estado\s+actual/i.test(txt)) {
+      el.innerHTML = ''; // solo muestra el botón URL, sin semáforo
+      return;
+    }
+
+    const ahora = new Date();
+    const minAhora = hhmm(ahora.getHours(), ahora.getMinutes());
+
+    // Procesar líneas (puede haber múltiples separadas por \n)
+    const lineas = txt.split('\n').map(l => l.trim()).filter(Boolean);
+    let estaAbierto = false;
+    let proxCambio  = null; // minutos hasta próximo cambio
+
+    for (const linea of lineas) {
+      if (!diaAplica(linea)) continue;
+      if (!mesAplica(linea))  continue;
+      if (/cerrado/i.test(linea) && !parseRangos(linea).length) {
+        // Línea de "CERRADO" sin rangos horarios
+        continue;
+      }
+      const rangos = parseRangos(linea);
+      for (const r of rangos) {
+        if (minAhora >= r.desde && minAhora < r.hasta) {
+          estaAbierto = true;
+          const rem = r.hasta - minAhora;
+          if (proxCambio === null || rem < proxCambio) proxCambio = rem;
+        } else if (minAhora < r.desde) {
+          // Aún no abrió hoy
+          const rem = r.desde - minAhora;
+          if (!estaAbierto && (proxCambio === null || rem < proxCambio)) proxCambio = rem;
+        }
+      }
+    }
+
+    function fmtMin(m) {
+      if (m === null) return '';
+      const h = Math.floor(m / 60);
+      const min = m % 60;
+      if (h > 0 && min > 0) return `${h} h ${min} min`;
+      if (h > 0)             return `${h} h`;
+      return `${min} min`;
+    }
+
+    if (estaAbierto) {
+      const cierra = proxCambio !== null
+        ? ` <span class="pf-countdown">· Cierra en ${fmtMin(proxCambio)}</span>` : '';
+      el.innerHTML = `<span class="pf-abierto">🟢 ABIERTO${cierra}</span>`;
+    } else {
+      const abre = proxCambio !== null
+        ? ` <span class="pf-countdown">· Abre en ${fmtMin(proxCambio)}</span>` : '';
+      el.innerHTML = `<span class="pf-cerrado">🔴 CERRADO${abre}</span>`;
+    }
+  }
+
+  render();
+  el._pfInterval = setInterval(render, 60000);
 }
 
 /* ── AMANECER / ATARDECER (sunrise-sunset.org) ───────────── */

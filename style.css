@@ -1381,6 +1381,56 @@ body {
 }
 .pf-btn:hover { background: rgba(26,82,118,0.16); }
 
+/* Semáforo PF */
+.pf-status {
+  margin: 4px 0 8px;
+  min-height: 24px;
+}
+.pf-abierto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a7a3a;
+  background: rgba(26,122,58,0.10);
+  border: 1.5px solid rgba(26,122,58,0.30);
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+.pf-cerrado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #9b1c1c;
+  background: rgba(155,28,28,0.10);
+  border: 1.5px solid rgba(155,28,28,0.30);
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+.pf-cerrado-siempre {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  background: rgba(0,0,0,0.06);
+  border: 1.5px solid rgba(0,0,0,0.15);
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+.pf-countdown {
+  font-weight: 500;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
 /* ── PANEL PASO FRONTERIZO ───────────────────────────────── */
 #pf-panel {
   display: none;
