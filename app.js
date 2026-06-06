@@ -1831,6 +1831,18 @@ function loadPFStatus(d) {
       }
     }
 
+    // Si está cerrado y no hay rango futuro hoy → calcular hasta apertura del día siguiente
+    if (!estaAbierto && proxCambio === null) {
+      for (const linea of lineas) {
+        if (!diaAplica(linea)) continue;
+        const rangosMan = parseRangos(linea);
+        for (const r of rangosMan) {
+          const rem = 24 * 60 - minAhora + r.desde;
+          if (proxCambio === null || rem < proxCambio) proxCambio = rem;
+        }
+      }
+    }
+
     function fmtMin(m) {
       if (m === null) return '';
       const h = Math.floor(m / 60);
