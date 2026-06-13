@@ -5,15 +5,24 @@
    FEATURE_DISTANCIAS: muestra/oculta el botón "📏 ¿A cuánto queda?"
    en la toolbar, que enlaza a la app hermana distancias-Argentinas
    (meteoro405.github.io/distancias-Argentinas).
-   Para activarlo: cambiar a true. No requiere ningún otro cambio. */
-const FEATURE_DISTANCIAS = false;
+   FEATURE_DONACION: muestra/oculta el botón "⛽ Doná".
+   Para alternar: cambiar el valor correspondiente. No requiere
+   ningún otro cambio. */
+const FEATURE_DISTANCIAS = true;
+const FEATURE_DONACION   = false;
 
 function initFeatureFlags() {
-  const btn = document.getElementById('btnDistancias');
-  const sep = document.getElementById('distanciasSep');
+  const btnD = document.getElementById('btnDistancias');
+  const sepD = document.getElementById('distanciasSep');
   if (FEATURE_DISTANCIAS) {
-    if (btn) btn.style.display = '';
-    if (sep) sep.style.display = '';
+    if (btnD) btnD.style.display = '';
+    if (sepD) sepD.style.display = '';
+  }
+  const btnF = document.querySelector('.fuel-pill');
+  const sepF = btnF ? btnF.previousElementSibling : null;
+  if (!FEATURE_DONACION) {
+    if (btnF) btnF.style.display = 'none';
+    if (sepF && sepF.classList.contains('toolbar-sep')) sepF.style.display = 'none';
   }
 }
 
