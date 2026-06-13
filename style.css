@@ -1628,6 +1628,32 @@ body {
   filter: brightness(0.95);
 }
 
+/* ── BOTÓN "¿A CUÁNTO QUEDA?" (app hermana — oculto por defecto) ────
+   Activar: poner FEATURE_DISTANCIAS = true en app.js.
+   Verde "cartel de ruta" — identidad propia de la app hermana
+   distancias-Argentinas (meteoro405.github.io/distancias-Argentinas) */
+.distancias-pill {
+  background: linear-gradient(135deg, #0a6b3d 0%, #085530 100%);
+  color: #f4f6f3 !important;
+  font-weight: 700;
+  border: 1px solid rgba(244,246,243,0.25);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(10,107,61,0.30);
+  transition: filter 0.15s, transform 0.1s;
+}
+.distancias-pill:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+.distancias-pill:active {
+  transform: translateY(0);
+  filter: brightness(0.92);
+}
+
 /* ── BOTÓN FLOTANTE DONACIÓN (FAB) — mobile always visible ── */
 .fuel-fab {
   display: none; /* oculto en desktop — en desktop está la toolbar */

@@ -1,6 +1,22 @@
 /* app.js — De Cuestas, Abras y Quebradas */
 'use strict';
 
+/* ── FEATURE FLAGS ───────────────────────────────────────────
+   FEATURE_DISTANCIAS: muestra/oculta el botón "📏 ¿A cuánto queda?"
+   en la toolbar, que enlaza a la app hermana distancias-Argentinas
+   (meteoro405.github.io/distancias-Argentinas).
+   Para activarlo: cambiar a true. No requiere ningún otro cambio. */
+const FEATURE_DISTANCIAS = false;
+
+function initFeatureFlags() {
+  const btn = document.getElementById('btnDistancias');
+  const sep = document.getElementById('distanciasSep');
+  if (FEATURE_DISTANCIAS) {
+    if (btn) btn.style.display = '';
+    if (sep) sep.style.display = '';
+  }
+}
+
 let activeTipo    = "TODOS";
 let activeProv    = "TODAS";
 let activeFilter  = "TODOS";
@@ -2242,6 +2258,7 @@ function emptyState() {
 /* ── INIT ────────────────────────────────────────────────── */
 // Arrancar sin ningún tipo activo = mostrar todos
 renderList();
+initFeatureFlags();
 
 /* ── DEEP LINK: abrir ruta desde URL ─────────────────────── */
 (function() {
