@@ -8,7 +8,7 @@
    FEATURE_DONACION: muestra/oculta el botón "⛽ Doná".
    Para alternar: cambiar el valor correspondiente. No requiere
    ningún otro cambio. */
-const FEATURE_DISTANCIAS = true;
+const FEATURE_DISTANCIAS = true; // v102
 const FEATURE_DONACION   = false;
 
 function initFeatureFlags() {
