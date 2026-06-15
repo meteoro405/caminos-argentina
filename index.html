@@ -84,12 +84,12 @@
       <div class="toolbar-sep"></div>
       <button class="pill filter-special fav-pill" id="btnFavs" onclick="filterSpecial('FAVORITOS',this)">♥ Favs</button>
       <button class="pill filter-special done-pill" id="btnVisit" onclick="filterSpecial('VISITADOS',this)">✓ Visitados</button>
-      <div class="toolbar-sep"></div>
+      <div class="toolbar-sep hidden-by-flag" id="fuelSep"></div>
       <button class="pill random-pill" onclick="showRandom()">🎲 Al azar</button>
       <div class="toolbar-sep"></div>
-      <button class="pill fuel-pill" onclick="document.getElementById('fuelModal').classList.add('open')" title="Doná 1 litro de combustible para que la app siga rodando">⛽ Doná</button>
-      <div class="toolbar-sep" id="distanciasSep" style="display:none"></div>
-      <button class="pill distancias-pill" id="btnDistancias" style="display:none"
+      <button class="pill fuel-pill hidden-by-flag" onclick="document.getElementById('fuelModal').classList.add('open')" title="Doná 1 litro de combustible para que la app siga rodando">⛽ Doná</button>
+      <div class="toolbar-sep hidden-by-flag" id="distanciasSep"></div>
+      <button class="pill distancias-pill hidden-by-flag" id="btnDistancias"
               onclick="window.open('https://meteoro405.github.io/distancias-Argentinas/','_blank')"
               title="¿A cuánto queda? — Distancias y tiempos entre 751 ciudades argentinas">📏 ¿A cuánto queda?</button>
     </div>
@@ -168,13 +168,13 @@
   </div>
 
   <!-- Botón flotante donación — visible en mobile (controlado por FEATURE_DONACION) -->
-  <button class="fuel-fab" id="fuelFab" onclick="document.getElementById('fuelModal').classList.add('open')"
+  <button class="fuel-fab hidden-by-flag" id="fuelFab" onclick="document.getElementById('fuelModal').classList.add('open')"
      title="Doná 1 litro de combustible para que la app siga rodando">
     ⛽
   </button>
 
   <!-- Botón flotante ¿A cuánto queda? — visible en mobile (controlado por FEATURE_DISTANCIAS) -->
-  <button class="distancias-fab" id="distanciasFab" style="display:none"
+  <button class="distancias-fab hidden-by-flag" id="distanciasFab"
      onclick="abrirDistanciasModal()"
      title="¿A cuánto queda? — Distancias entre ciudades argentinas">
     📏

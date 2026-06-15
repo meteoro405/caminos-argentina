@@ -12,40 +12,28 @@ const FEATURE_DISTANCIAS = true;
 const FEATURE_DONACION   = false;
 
 function initFeatureFlags() {
-  // ── DISTANCIAS ──────────────────────────────────────────
-  // FAB mobile (el CSS @media lo muestra solo en ≤640px)
-  const fabD = document.getElementById('distanciasFab');
-  // Toolbar desktop
-  const btnD = document.getElementById('btnDistancias');
-  const sepD = document.getElementById('distanciasSep');
+  // Todos los elementos arrancan con clase hidden-by-flag en el HTML.
+  // Esta función simplemente la quita si el feature está activo.
 
-  if (!FEATURE_DISTANCIAS) {
-    if (fabD) fabD.classList.add('hidden-by-flag');
-    if (btnD) btnD.classList.add('hidden-by-flag');
-    if (sepD) sepD.classList.add('hidden-by-flag');
-  } else {
-    if (fabD) fabD.classList.remove('hidden-by-flag');
-    if (btnD) btnD.classList.remove('hidden-by-flag');
-    if (sepD) sepD.classList.remove('hidden-by-flag');
+  // ── DISTANCIAS ──────────────────────────────────────────
+  if (FEATURE_DISTANCIAS) {
+    const els = ['distanciasFab', 'btnDistancias', 'distanciasSep'];
+    els.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden-by-flag');
+    });
   }
 
   // ── DONACIÓN ────────────────────────────────────────────
-  // FAB mobile naranja
-  const fabF = document.getElementById('fuelFab');
-  // Toolbar desktop
-  const btnF = document.querySelector('.fuel-pill');
-  const sepF = btnF ? btnF.previousElementSibling : null;
-
-  if (!FEATURE_DONACION) {
-    if (fabF) fabF.classList.add('hidden-by-flag');
-    if (btnF) btnF.classList.add('hidden-by-flag');
-    if (sepF && sepF.classList.contains('toolbar-sep'))
-      sepF.classList.add('hidden-by-flag');
-  } else {
-    if (fabF) fabF.classList.remove('hidden-by-flag');
+  if (FEATURE_DONACION) {
+    const els = ['fuelFab', 'fuelSep'];
+    els.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden-by-flag');
+    });
+    // fuel-pill no tiene id — lo buscamos por clase
+    const btnF = document.querySelector('.fuel-pill');
     if (btnF) btnF.classList.remove('hidden-by-flag');
-    if (sepF && sepF.classList.contains('toolbar-sep'))
-      sepF.classList.remove('hidden-by-flag');
   }
 }
 
