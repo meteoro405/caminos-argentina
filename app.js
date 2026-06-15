@@ -11,12 +11,12 @@
 const FEATURE_DISTANCIAS = true;
 const FEATURE_DONACION   = false;
 const FEATURE_CAVOK      = true;
+const FEATURE_CONVERSOR  = true;
 
 function initFeatureFlags() {
   // Todos los elementos arrancan con clase hidden-by-flag en el HTML.
-  // Esta función simplemente la quita si el feature está activo.
+  // Quitar la clase activa el elemento. CSS @media controla visibilidad FAB/toolbar.
 
-  // ── DISTANCIAS ──────────────────────────────────────────
   if (FEATURE_DISTANCIAS) {
     ['distanciasFab', 'btnDistancias', 'distanciasSep'].forEach(id => {
       const el = document.getElementById(id);
@@ -24,7 +24,6 @@ function initFeatureFlags() {
     });
   }
 
-  // ── CAVOK ────────────────────────────────────────────────
   if (FEATURE_CAVOK) {
     ['cavokFab', 'btnCavok', 'cavokSep'].forEach(id => {
       const el = document.getElementById(id);
@@ -32,7 +31,13 @@ function initFeatureFlags() {
     });
   }
 
-  // ── DONACIÓN ────────────────────────────────────────────
+  if (FEATURE_CONVERSOR) {
+    ['conversorFab', 'btnConversor', 'conversorSep'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden-by-flag');
+    });
+  }
+
   if (FEATURE_DONACION) {
     ['fuelFab', 'fuelSep'].forEach(id => {
       const el = document.getElementById(id);
@@ -84,9 +89,28 @@ function cerrarCavokModal() {
   document.body.style.overflow = '';
 }
 
+/* ── MODAL CONVERSOR DE COMBUSTIBLE ─────────────────────── */
+function abrirConversorModal() {
+  const modal = document.getElementById('conversorModal');
+  const frame = document.getElementById('conversorFrame');
+  if (!modal || !frame) return;
+  if (!frame.src || frame.src === window.location.href) {
+    frame.src = 'https://meteoro405.github.io/consumos/';
+  }
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarConversorModal() {
+  const modal = document.getElementById('conversorModal');
+  if (!modal) return;
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
 // Cerrar modales con click en overlay (fuera del box)
 document.addEventListener('DOMContentLoaded', () => {
-  ['distanciasModal', 'cavokModal'].forEach(id => {
+  ['distanciasModal', 'cavokModal', 'conversorModal'].forEach(id => {
     const modal = document.getElementById(id);
     if (modal) {
       modal.addEventListener('click', (e) => {
