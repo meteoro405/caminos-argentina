@@ -167,11 +167,47 @@
     </div>
   </div>
 
-  <!-- Botón flotante donación — visible en mobile -->
-  <button class="fuel-fab" onclick="document.getElementById('fuelModal').classList.add('open')"
+  <!-- Botón flotante donación — visible en mobile (controlado por FEATURE_DONACION) -->
+  <button class="fuel-fab" id="fuelFab" onclick="document.getElementById('fuelModal').classList.add('open')"
      title="Doná 1 litro de combustible para que la app siga rodando">
     ⛽
   </button>
+
+  <!-- Botón flotante ¿A cuánto queda? — visible en mobile (controlado por FEATURE_DISTANCIAS) -->
+  <button class="distancias-fab" id="distanciasFab" style="display:none"
+     onclick="abrirDistanciasModal()"
+     title="¿A cuánto queda? — Distancias entre ciudades argentinas">
+    📏
+  </button>
+
+  <!-- Modal ¿A cuánto queda? (iframe interno) -->
+  <div class="distancias-modal-overlay" id="distanciasModal">
+    <div class="distancias-modal-box">
+      <div class="distancias-modal-header">
+        <span class="distancias-modal-title">📏 ¿A cuánto queda?</span>
+        <button class="distancias-modal-close" onclick="cerrarDistanciasModal()" title="Cerrar">✕</button>
+      </div>
+      <iframe class="distancias-modal-frame" id="distanciasFrame"
+              src="" loading="lazy"
+              title="¿A cuánto queda? — distancias entre ciudades argentinas"
+              allow="fullscreen"></iframe>
+    </div>
+  </div>
+
+  <!-- Banner instalación PWA (Android/Chrome) -->
+  <div class="install-banner" id="installBanner" style="display:none">
+    <span class="install-banner-txt">📲 Instalá la app para usarla sin internet</span>
+    <div class="install-banner-btns">
+      <button class="install-banner-ok" id="installBannerOk">Instalar</button>
+      <button class="install-banner-no" id="installBannerNo">Ahora no</button>
+    </div>
+  </div>
+
+  <!-- Banner Safari / iOS -->
+  <div class="install-banner install-banner-ios" id="installBannerIos" style="display:none">
+    <button class="install-banner-close" id="installBannerIosClose">✕</button>
+    <span class="install-banner-txt">Para instalar: tocá <strong>Compartir</strong> <span style="font-size:17px">⎙</span> y después <strong>«Agregar a pantalla de inicio»</strong></span>
+  </div>
 
   <script>
   function closeFuelModal(e) {

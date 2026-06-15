@@ -2,29 +2,144 @@
 'use strict';
 
 /* ── FEATURE FLAGS ───────────────────────────────────────────
-   FEATURE_DISTANCIAS: muestra/oculta el botón "📏 ¿A cuánto queda?"
-   en la toolbar, que enlaza a la app hermana distancias-Argentinas
-   (meteoro405.github.io/distancias-Argentinas).
-   FEATURE_DONACION: muestra/oculta el botón "⛽ Doná".
-   Para alternar: cambiar el valor correspondiente. No requiere
-   ningún otro cambio. */
-const FEATURE_DISTANCIAS = true; // v102
+   FEATURE_DISTANCIAS: muestra botón FAB verde "📏" en mobile y
+   el botón de toolbar en desktop, que abre ¿A cuánto queda?
+   dentro de un modal iframe (92vh, header verde con X).
+   FEATURE_DONACION: muestra/oculta ⛽ Doná (toolbar + FAB
+   naranja en mobile + modal MercadoPago).
+   Para alternar: cambiar el valor. Sin otros cambios necesarios. */
+const FEATURE_DISTANCIAS = true;
 const FEATURE_DONACION   = false;
 
 function initFeatureFlags() {
+  // FAB mobile distancias
+  const fabD = document.getElementById('distanciasFab');
+  // Toolbar desktop distancias
   const btnD = document.getElementById('btnDistancias');
   const sepD = document.getElementById('distanciasSep');
   if (FEATURE_DISTANCIAS) {
+    if (fabD) fabD.style.display = '';   // CSS @media lo controla en desktop
     if (btnD) btnD.style.display = '';
     if (sepD) sepD.style.display = '';
   }
+
+  // FAB mobile donación
+  const fabF = document.getElementById('fuelFab');
+  // Toolbar desktop donación
   const btnF = document.querySelector('.fuel-pill');
   const sepF = btnF ? btnF.previousElementSibling : null;
   if (!FEATURE_DONACION) {
+    if (fabF) fabF.style.display = 'none';
     if (btnF) btnF.style.display = 'none';
     if (sepF && sepF.classList.contains('toolbar-sep')) sepF.style.display = 'none';
   }
 }
+
+/* ── MODAL ¿A CUÁNTO QUEDA? ─────────────────────────────── */
+function abrirDistanciasModal() {
+  const modal = document.getElementById('distanciasModal');
+  const frame = document.getElementById('distanciasFrame');
+  if (!modal || !frame) return;
+  // Cargar iframe solo la primera vez
+  if (!frame.src || frame.src === window.location.href) {
+    frame.src = 'https://meteoro405.github.io/distancias-Argentinas/';
+  }
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarDistanciasModal() {
+  const modal = document.getElementById('distanciasModal');
+  if (!modal) return;
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Cerrar modal con click en overlay (fuera del box)
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('distanciasModal');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) cerrarDistanciasModal();
+    });
+  }
+});
+
+/* ── PWA INSTALACIÓN (Android/Chrome + iOS/Safari) ──────── */
+let _deferredInstall = null;
+
+// Android / Chrome — beforeinstallprompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  _deferredInstall = e;
+  // Solo mostrar si no está ya instalada y no rechazó antes en esta sesión
+  if (!window.matchMedia('(display-mode: standalone)').matches &&
+      !sessionStorage.getItem('installDismissed')) {
+    const banner = document.getElementById('installBanner');
+    if (banner) banner.style.display = 'flex';
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  const banner = document.getElementById('installBanner');
+  if (banner) banner.style.display = 'none';
+  _deferredInstall = null;
+  // También ocultar el botón de instalar del header
+  const installBtn = document.getElementById('installBtn');
+  if (installBtn) installBtn.style.display = 'none';
+});
+
+function initInstallBanner() {
+  const banner    = document.getElementById('installBanner');
+  const bannerIos = document.getElementById('installBannerIos');
+  const btnOk     = document.getElementById('installBannerOk');
+  const btnNo     = document.getElementById('installBannerNo');
+  const btnIosX   = document.getElementById('installBannerIosClose');
+
+  // Botón "Instalar"
+  if (btnOk) {
+    btnOk.addEventListener('click', async () => {
+      if (banner) banner.style.display = 'none';
+      if (!_deferredInstall) return;
+      _deferredInstall.prompt();
+      const { outcome } = await _deferredInstall.userChoice;
+      _deferredInstall = null;
+      if (outcome === 'accepted') {
+        const installBtn = document.getElementById('installBtn');
+        if (installBtn) installBtn.style.display = 'none';
+      }
+    });
+  }
+
+  // Botón "Ahora no"
+  if (btnNo) {
+    btnNo.addEventListener('click', () => {
+      if (banner) banner.style.display = 'none';
+      sessionStorage.setItem('installDismissed', '1');
+    });
+  }
+
+  // Cerrar banner iOS
+  if (btnIosX) {
+    btnIosX.addEventListener('click', () => {
+      if (bannerIos) bannerIos.style.display = 'none';
+      sessionStorage.setItem('installDismissed', '1');
+    });
+  }
+
+  // Detectar iOS/Safari (no Chrome en iOS)
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches
+                          || window.navigator.standalone;
+  const isSafariBrowser = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  if (isIos && isSafariBrowser && !isInStandaloneMode &&
+      !sessionStorage.getItem('installDismissed')) {
+    if (bannerIos) bannerIos.style.display = 'flex';
+  }
+}
+
+
 
 let activeTipo    = "TODOS";
 let activeProv    = "TODAS";
@@ -2268,6 +2383,7 @@ function emptyState() {
 // Arrancar sin ningún tipo activo = mostrar todos
 renderList();
 initFeatureFlags();
+initInstallBanner();
 
 /* ── DEEP LINK: abrir ruta desde URL ─────────────────────── */
 (function() {

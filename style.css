@@ -1766,6 +1766,168 @@ button.fuel-fab {
   font-family: inherit;
 }
 
+/* ── FAB ¿A CUÁNTO QUEDA? ────────────────────────────────── */
+.distancias-fab {
+  position: fixed;
+  bottom: 18px;
+  right: 16px;
+  z-index: 999;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0a6b3d 0%, #085530 100%);
+  color: #f4f6f3;
+  font-size: 22px;
+  border: 2px solid rgba(244,246,243,0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(10,107,61,0.45);
+  transition: transform 0.15s, box-shadow 0.15s;
+  line-height: 1;
+  cursor: pointer;
+}
+.distancias-fab:hover,
+.distancias-fab:focus {
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(10,107,61,0.60);
+}
+.distancias-fab:active { transform: scale(0.96); }
+@media (max-width: 640px) {
+  .distancias-fab { display: flex; }
+}
+
+/* ── MODAL ¿A CUÁNTO QUEDA? ─────────────────────────────── */
+.distancias-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(0,0,0,0.65);
+  align-items: flex-end;
+  justify-content: center;
+}
+.distancias-modal-overlay.open {
+  display: flex;
+}
+.distancias-modal-box {
+  width: 100%;
+  max-width: 640px;
+  height: 92vh;
+  background: #FAF4E4;
+  border-radius: 18px 18px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.30);
+}
+@media (min-width: 641px) {
+  .distancias-modal-overlay {
+    align-items: center;
+    padding: 20px;
+  }
+  .distancias-modal-box {
+    height: 88vh;
+    border-radius: 14px;
+    max-width: 820px;
+  }
+}
+.distancias-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 10px;
+  background: #0a6b3d;
+  flex-shrink: 0;
+}
+.distancias-modal-title {
+  color: #f4f6f3;
+  font-weight: 700;
+  font-size: 15px;
+}
+.distancias-modal-close {
+  background: rgba(255,255,255,0.18);
+  border: none;
+  color: #f4f6f3;
+  font-size: 18px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.distancias-modal-close:hover { background: rgba(255,255,255,0.30); }
+.distancias-modal-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: #f2e8cc;
+}
+
+/* ── BANNER INSTALACIÓN PWA (Android/Chrome) ────────────── */
+.install-banner {
+  position: fixed;
+  bottom: 76px;
+  left: 12px;
+  right: 12px;
+  z-index: 1050;
+  background: #FAF4E4;
+  border: 1.5px solid #A0552A;
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 2px 12px rgba(42,26,10,0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.install-banner-txt {
+  font-size: 13px;
+  color: #2A1A0A;
+  line-height: 1.4;
+}
+.install-banner-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.install-banner-ok {
+  background: #0a6b3d;
+  color: #f4f6f3;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 18px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+.install-banner-no {
+  background: transparent;
+  color: #5A3A20;
+  border: 1.5px solid rgba(160,85,42,0.25);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.install-banner-ios {
+  position: relative;
+  padding-right: 36px;
+}
+.install-banner-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #5A3A20;
+  cursor: pointer;
+  line-height: 1;
+}
+
 /* ── BOTÓN INSTALACIÓN PWA ───────────────────────────────── */
 .install-btn {
   display: none; /* JS lo muestra cuando corresponde */
