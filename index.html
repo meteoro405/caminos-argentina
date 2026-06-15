@@ -90,8 +90,12 @@
       <button class="pill fuel-pill hidden-by-flag" onclick="document.getElementById('fuelModal').classList.add('open')" title="Doná 1 litro de combustible para que la app siga rodando">⛽ Doná</button>
       <div class="toolbar-sep hidden-by-flag" id="distanciasSep"></div>
       <button class="pill distancias-pill hidden-by-flag" id="btnDistancias"
-              onclick="window.open('https://meteoro405.github.io/distancias-Argentinas/','_blank')"
+              onclick="abrirDistanciasModal()"
               title="¿A cuánto queda? — Distancias y tiempos entre 751 ciudades argentinas">📏 ¿A cuánto queda?</button>
+      <div class="toolbar-sep hidden-by-flag" id="cavokSep"></div>
+      <button class="pill cavok-pill hidden-by-flag" id="btnCavok"
+              onclick="abrirCavokModal()"
+              title="CAVOK — Meteorología aeronáutica en tiempo real">✈ CAVOK</button>
     </div>
 
     <div class="main">
@@ -180,7 +184,26 @@
     📏
   </button>
 
-  <!-- Modal ¿A cuánto queda? (iframe interno) -->
+  <!-- Botón flotante CAVOK — visible en mobile (controlado por FEATURE_CAVOK) -->
+  <button class="cavok-fab hidden-by-flag" id="cavokFab"
+     onclick="abrirCavokModal()"
+     title="CAVOK — Meteorología aeronáutica en tiempo real">
+    ✈
+  </button>
+
+  <!-- Modal CAVOK (iframe interno) -->
+  <div class="distancias-modal-overlay" id="cavokModal">
+    <div class="distancias-modal-box">
+      <div class="distancias-modal-header" style="background:#1a3a5a;">
+        <span class="distancias-modal-title">✈ CAVOK · Meteorología aeronáutica</span>
+        <button class="distancias-modal-close" onclick="cerrarCavokModal()" title="Cerrar">✕</button>
+      </div>
+      <iframe class="distancias-modal-frame" id="cavokFrame"
+              src="" loading="lazy"
+              title="CAVOK — Meteorología aeronáutica"
+              allow="fullscreen"></iframe>
+    </div>
+  </div>
   <div class="distancias-modal-overlay" id="distanciasModal">
     <div class="distancias-modal-box">
       <div class="distancias-modal-header">

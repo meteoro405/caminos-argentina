@@ -10,6 +10,7 @@
    Para alternar: cambiar el valor. Sin otros cambios necesarios. */
 const FEATURE_DISTANCIAS = true;
 const FEATURE_DONACION   = false;
+const FEATURE_CAVOK      = true;
 
 function initFeatureFlags() {
   // Todos los elementos arrancan con clase hidden-by-flag en el HTML.
@@ -17,8 +18,15 @@ function initFeatureFlags() {
 
   // ── DISTANCIAS ──────────────────────────────────────────
   if (FEATURE_DISTANCIAS) {
-    const els = ['distanciasFab', 'btnDistancias', 'distanciasSep'];
-    els.forEach(id => {
+    ['distanciasFab', 'btnDistancias', 'distanciasSep'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden-by-flag');
+    });
+  }
+
+  // ── CAVOK ────────────────────────────────────────────────
+  if (FEATURE_CAVOK) {
+    ['cavokFab', 'btnCavok', 'cavokSep'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.classList.remove('hidden-by-flag');
     });
@@ -26,12 +34,10 @@ function initFeatureFlags() {
 
   // ── DONACIÓN ────────────────────────────────────────────
   if (FEATURE_DONACION) {
-    const els = ['fuelFab', 'fuelSep'];
-    els.forEach(id => {
+    ['fuelFab', 'fuelSep'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.classList.remove('hidden-by-flag');
     });
-    // fuel-pill no tiene id — lo buscamos por clase
     const btnF = document.querySelector('.fuel-pill');
     if (btnF) btnF.classList.remove('hidden-by-flag');
   }
@@ -57,14 +63,40 @@ function cerrarDistanciasModal() {
   document.body.style.overflow = '';
 }
 
-// Cerrar modal con click en overlay (fuera del box)
+/* ── MODAL CAVOK ─────────────────────────────────────────── */
+function abrirCavokModal(icao) {
+  const modal = document.getElementById('cavokModal');
+  const frame = document.getElementById('cavokFrame');
+  if (!modal || !frame) return;
+  // Si se pasa un ICAO (integración Nivel 2 futura), precarga ese aeropuerto
+  const url = icao
+    ? `https://meteoro405.github.io/CAVOK/?icao=${icao}`
+    : 'https://meteoro405.github.io/CAVOK/';
+  if (frame.src !== url) frame.src = url;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarCavokModal() {
+  const modal = document.getElementById('cavokModal');
+  if (!modal) return;
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Cerrar modales con click en overlay (fuera del box)
 document.addEventListener('DOMContentLoaded', () => {
-  const modal = document.getElementById('distanciasModal');
-  if (modal) {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) cerrarDistanciasModal();
-    });
-  }
+  ['distanciasModal', 'cavokModal'].forEach(id => {
+    const modal = document.getElementById(id);
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('open');
+          document.body.style.overflow = '';
+        }
+      });
+    }
+  });
 });
 
 let activeTipo    = "TODOS";
