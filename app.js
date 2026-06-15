@@ -2320,7 +2320,6 @@ function emptyState() {
 /* ── INIT ────────────────────────────────────────────────── */
 // Arrancar sin ningún tipo activo = mostrar todos
 renderList();
-initFeatureFlags();
 
 /* ── DEEP LINK: abrir ruta desde URL ─────────────────────── */
 (function() {
