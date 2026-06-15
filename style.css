@@ -1766,6 +1766,11 @@ button.fuel-fab {
   font-family: inherit;
 }
 
+/* Clase utilitaria para feature flags — gana sobre @media */
+.hidden-by-flag {
+  display: none !important;
+}
+
 /* ── FAB ¿A CUÁNTO QUEDA? ────────────────────────────────── */
 .distancias-fab {
   position: fixed;
@@ -1795,6 +1800,9 @@ button.fuel-fab {
 .distancias-fab:active { transform: scale(0.96); }
 @media (max-width: 640px) {
   .distancias-fab { display: flex; }
+  /* En mobile el FAB reemplaza al botón de toolbar */
+  #btnDistancias,
+  #distanciasSep { display: none !important; }
 }
 
 /* ── MODAL ¿A CUÁNTO QUEDA? ─────────────────────────────── */

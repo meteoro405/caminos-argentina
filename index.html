@@ -215,32 +215,86 @@
       document.getElementById('fuelModal').classList.remove('open');
   }
 
-  // ── PWA Install Prompt ───────────────────────────────────
-  let _installPrompt = null;
-  const _installBtn  = document.getElementById('installBtn');
+  // ── PWA Install ──────────────────────────────────────────
+  // Un único _installPrompt compartido
+  window._installPrompt = null;
 
-  // El browser dispara esto cuando la app NO está instalada y es instalable
   window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();            // evitar el banner automático del browser
-    _installPrompt = e;
-    _installBtn.style.display = 'flex';  // mostrar el botón
-  });
-
-  _installBtn.addEventListener('click', async () => {
-    if (!_installPrompt) return;
-    _installPrompt.prompt();       // mostrar diálogo nativo del SO
-    const { outcome } = await _installPrompt.userChoice;
-    if (outcome === 'accepted') {
-      _installBtn.style.display = 'none';  // instalada → desaparece
+    e.preventDefault();
+    window._installPrompt = e;
+    // Mostrar banner solo si no rechazó antes en esta sesión
+    if (!sessionStorage.getItem('installDismissed')) {
+      const b = document.getElementById('installBanner');
+      if (b) b.style.display = 'flex';
     }
-    _installPrompt = null;
+    // Botón del header también
+    const btn = document.getElementById('installBtn');
+    if (btn) btn.style.display = 'flex';
   });
 
-  // Si ya está instalada como PWA, ocultar definitivamente
   window.addEventListener('appinstalled', () => {
-    _installBtn.style.display = 'none';
-    _installPrompt = null;
+    window._installPrompt = null;
+    const b = document.getElementById('installBanner');
+    if (b) b.style.display = 'none';
+    const btn = document.getElementById('installBtn');
+    if (btn) btn.style.display = 'none';
   });
+
+  // Botón ↓ del header
+  const _installBtn = document.getElementById('installBtn');
+  if (_installBtn) {
+    _installBtn.addEventListener('click', async () => {
+      if (!window._installPrompt) return;
+      window._installPrompt.prompt();
+      const { outcome } = await window._installPrompt.userChoice;
+      window._installPrompt = null;
+      if (outcome === 'accepted') _installBtn.style.display = 'none';
+    });
+  }
+
+  // Botones del banner Android
+  const _bannerOk = document.getElementById('installBannerOk');
+  const _bannerNo = document.getElementById('installBannerNo');
+  const _banner   = document.getElementById('installBanner');
+
+  if (_bannerOk) {
+    _bannerOk.addEventListener('click', async () => {
+      if (_banner) _banner.style.display = 'none';
+      if (!window._installPrompt) return;
+      window._installPrompt.prompt();
+      const { outcome } = await window._installPrompt.userChoice;
+      window._installPrompt = null;
+      if (outcome === 'accepted') {
+        const btn = document.getElementById('installBtn');
+        if (btn) btn.style.display = 'none';
+      }
+    });
+  }
+  if (_bannerNo) {
+    _bannerNo.addEventListener('click', () => {
+      if (_banner) _banner.style.display = 'none';
+      sessionStorage.setItem('installDismissed', '1');
+    });
+  }
+
+  // Banner iOS / Safari
+  const _bannerIos  = document.getElementById('installBannerIos');
+  const _bannerIosX = document.getElementById('installBannerIosClose');
+  if (_bannerIosX) {
+    _bannerIosX.addEventListener('click', () => {
+      if (_bannerIos) _bannerIos.style.display = 'none';
+      sessionStorage.setItem('installDismissed', '1');
+    });
+  }
+  (function detectIos() {
+    const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                      || window.navigator.standalone;
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    if (isIos && isSafari && !isStandalone && !sessionStorage.getItem('installDismissed')) {
+      if (_bannerIos) _bannerIos.style.display = 'flex';
+    }
+  })();
   </script>
 </body>
 </html>
