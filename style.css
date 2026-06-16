@@ -1935,7 +1935,7 @@ button.fuel-fab {
   border-radius: 50%;
   background: linear-gradient(135deg, #0077b6 0%, #005a8e 100%);
   color: #ffffff;
-  font-size: 22px;
+  font-size: 19px;
   border: 2px solid rgba(255,255,255,0.35);
   display: none;
   align-items: center;
