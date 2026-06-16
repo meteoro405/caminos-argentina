@@ -123,18 +123,27 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// Sincroniza body.detail-open con .main.has-selection — así los FABs
-// de apps hermanas se ocultan automáticamente al abrir el detalle de
-// una ruta, sin tener que tocar los 7 puntos donde se togglea has-selection.
-document.addEventListener('DOMContentLoaded', () => {
+// Sincroniza la visibilidad de los FABs de apps hermanas con
+// .main.has-selection — se ocultan al abrir el detalle de una ruta
+// y reaparecen al volver al listado. Aplica la clase directamente
+// a cada FAB (no depende de selectores CSS anidados).
+(function initDetailOpenSync() {
   const mainEl = document.querySelector('.main');
-  if (!mainEl) return;
+  if (!mainEl) {
+    document.addEventListener('DOMContentLoaded', initDetailOpenSync);
+    return;
+  }
+  const fabIds = ['distanciasFab', 'cavokFab', 'conversorFab', 'fuelFab'];
   const sync = () => {
-    document.body.classList.toggle('detail-open', mainEl.classList.contains('has-selection'));
+    const open = mainEl.classList.contains('has-selection');
+    fabIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('detail-open-hide', open);
+    });
   };
   sync();
   new MutationObserver(sync).observe(mainEl, { attributes: true, attributeFilter: ['class'] });
-});
+})();
 
 let activeTipo    = "TODOS";
 let activeProv    = "TODAS";

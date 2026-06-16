@@ -1772,13 +1772,9 @@ button.fuel-fab {
 }
 
 /* Ocultar los FABs de apps hermanas cuando hay una ruta abierta.
-   No se puede usar selector de hermanos (~) porque .main y los FABs
-   no comparten el mismo padre directo en el DOM. Se usa una clase
-   en <body> que togglea app.js junto con has-selection. */
-body.detail-open .distancias-fab,
-body.detail-open .cavok-fab,
-body.detail-open .conversor-fab,
-body.detail-open .fuel-fab {
+   app.js aplica esta clase directamente a cada FAB via JS
+   (sincronizada con .main.has-selection mediante MutationObserver). */
+.detail-open-hide {
   display: none !important;
 }
 
