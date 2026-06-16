@@ -123,6 +123,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// Sincroniza body.detail-open con .main.has-selection — así los FABs
+// de apps hermanas se ocultan automáticamente al abrir el detalle de
+// una ruta, sin tener que tocar los 7 puntos donde se togglea has-selection.
+document.addEventListener('DOMContentLoaded', () => {
+  const mainEl = document.querySelector('.main');
+  if (!mainEl) return;
+  const sync = () => {
+    document.body.classList.toggle('detail-open', mainEl.classList.contains('has-selection'));
+  };
+  sync();
+  new MutationObserver(sync).observe(mainEl, { attributes: true, attributeFilter: ['class'] });
+});
+
 let activeTipo    = "TODOS";
 let activeProv    = "TODAS";
 let activeFilter  = "TODOS";
